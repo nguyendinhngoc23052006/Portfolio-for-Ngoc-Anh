@@ -1,0 +1,148 @@
+.edu-list {
+  display: grid;
+  gap: clamp(3rem, 10vh, 6rem);
+  max-width: 1300px;
+  margin: clamp(2.5rem, 6vh, 4rem) auto 0;
+}
+
+.edu-item {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  padding-top: clamp(1.5rem, 4vh, 2.5rem);
+  border-top: 1px solid var(--line);
+}
+
+.edu-years {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.3em;
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 11vw, 10rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+.edu-years .mask:last-child {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent);
+}
+
+.edu-years .mask > span {
+  display: inline-block;
+}
+
+.edu-text {
+  display: grid;
+  gap: 0.4rem;
+  align-content: center;
+}
+
+.edu-school {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.edu-major {
+  font-size: var(--fs-lead);
+  color: var(--muted);
+}
+
+.edu-art {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 16rem);
+}
+
+.edu-art svg {
+  width: 100%;
+  overflow: visible;
+}
+
+.edu-thread {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .edu-item {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 15rem;
+    align-items: center;
+    column-gap: 3vw;
+  }
+
+  .edu-thread {
+    display: block;
+    position: absolute;
+    right: 7rem;
+    bottom: calc(-1 * clamp(3rem, 10vh, 6rem));
+    width: 2rem;
+    height: clamp(3rem, 10vh, 6rem);
+    overflow: visible;
+  }
+}
+
+.edu-thread path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+}
+
+.eg-sphere {
+  fill: rgb(154 90 15 / 0.06);
+  stroke: var(--fg);
+  stroke-width: 1.5;
+}
+
+.eg-line {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 0.8;
+  opacity: 0.45;
+}
+
+.eg-route {
+  fill: none;
+  stroke: var(--accent-2);
+  stroke-width: 2;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+
+.eg-port {
+  fill: var(--accent-2);
+}
+
+.eg-ship {
+  fill: var(--accent);
+}
+
+.eg-grid {
+  stroke: var(--line);
+}
+
+.eg-axis {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1.5;
+}
+
+.eg-curve {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.eg-symbol {
+  fill: var(--accent-2);
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-style: italic;
+}

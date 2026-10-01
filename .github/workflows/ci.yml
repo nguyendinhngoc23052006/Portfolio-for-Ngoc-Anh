@@ -1,0 +1,75 @@
+# Copied from the guide's templates/workflows/. No placeholders.
+# Job names "tests", "lint", "typecheck" and "architecture-current" are required
+# BY NAME by both rulesets (Part 2 step 11); the first three are also polled by
+# name by deploy-production's release gate. Rename one and you move every place
+# in the same PR.
+#
+# architecture-current runs scripts/architecture.mjs, which Part 2 step 10 copies
+# in the SAME PR as this file. Copying this workflow without that script fails
+# every PR from that point on.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+          cache: npm
+      - run: npm ci
+      # Coverage is a signal for the human at review time, NEVER a threshold
+      # gate - thresholds breed test theater.
+      - run: npm test -- --coverage --coverage.reporter=text-summary | tee /tmp/cov.txt
+      - run: |
+          {
+            echo '## Coverage'
+            echo '```'
+            cat /tmp/cov.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  # The architecture graph is DERIVED, never drawn. This job regenerates it from
+  # the repo's own committed files and fails if the committed picture disagrees.
+  # That is the whole enforcement: a diagram nobody checks is wrong the first
+  # time someone renames a workflow and forgets to redraw it.
+  architecture-current:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "lts/*"
+      # No `npm ci` step: the script's import block is `node:fs` and `node:path`
+      # only, so there is nothing to install. It leans on the same setup-node
+      # step the other three jobs in this file already depend on - not on any
+      # additional platform behavior.
+      - run: node scripts/architecture.mjs --check

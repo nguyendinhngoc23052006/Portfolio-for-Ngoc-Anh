@@ -1,0 +1,153 @@
+.direction {
+  overflow: clip;
+}
+
+.direction::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 40% at 80% 30%, rgb(242 190 98 / 0.12), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgb(255 122 89 / 0.1), transparent 70%);
+  pointer-events: none;
+}
+
+.direction-grid {
+  position: relative;
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.direction-text {
+  display: grid;
+  gap: clamp(1.75rem, 4vh, 2.75rem);
+  align-content: start;
+}
+
+.direction-intro {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.direction-focus {
+  padding-bottom: 0.1em;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 6.8vw, 6.4rem);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+  background: linear-gradient(100deg, var(--gold) 10%, #ffe2b0 45%, var(--vermilion) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-wrap: balance;
+}
+
+.direction-paragraphs {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 38rem;
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+}
+
+.direction-network {
+  margin: 0;
+}
+
+.network-frame {
+  position: relative;
+}
+
+.direction-network svg {
+  width: 100%;
+  overflow: visible;
+}
+
+@media (min-width: 900px) {
+  .direction-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .direction-network {
+    position: sticky;
+    top: 18vh;
+    align-self: start;
+    padding-top: 6rem;
+  }
+}
+
+.dn-route {
+  fill: none;
+  stroke: rgb(244 238 227 / 0.28);
+  stroke-width: 1.2;
+}
+
+.dn-relay {
+  fill: var(--indigo);
+  stroke: rgb(244 238 227 / 0.7);
+  stroke-width: 1.5;
+}
+
+.dn-packet {
+  fill: var(--gold);
+  filter: drop-shadow(0 0 6px rgb(232 176 79 / 0.9));
+}
+
+.dn-hub circle {
+  fill: var(--indigo);
+  stroke: var(--gold);
+  stroke-width: 2.5;
+}
+
+.dn-result {
+  fill: var(--vermilion);
+  filter: drop-shadow(0 0 18px rgb(224 83 58 / 0.7));
+}
+
+.dn-pulse {
+  fill: none;
+  stroke: var(--vermilion);
+  stroke-width: 1.5;
+  opacity: 0;
+}
+
+.dn-label {
+  fill: var(--silk);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  text-anchor: middle;
+  letter-spacing: 0.02em;
+}
+
+.dn-label--result {
+  fill: var(--gold);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.dn-hub {
+  cursor: pointer;
+}
+
+.dn-hit {
+  fill: transparent;
+}
+
+.dn-hub circle:not(.dn-hit) {
+  transition: fill 0.3s;
+}
+
+.dn-hub:hover circle:not(.dn-hit) {
+  fill: var(--gold);
+}
+
+.dn-parcel {
+  fill: #fff3d6;
+  filter: drop-shadow(0 0 8px rgb(255 211 138 / 0.95));
+}
