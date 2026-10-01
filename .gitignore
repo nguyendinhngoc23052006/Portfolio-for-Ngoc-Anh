@@ -1,0 +1,18 @@
+node_modules
+dist
+coverage
+*.tsbuildinfo
+*.local
+.env
+.env.*.local
+.wrangler
+
+# Part 0 scope lives per session, never in Git.
+.claude/scope.json
+.claude/scope-migrations/
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+npm-debug.log*

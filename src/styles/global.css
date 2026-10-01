@@ -1,0 +1,888 @@
+/* Registered so the whole page can cross-fade between chapter themes. */
+@property --bg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0b0d1a;
+}
+@property --fg {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f4eee3;
+}
+@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e8b04f;
+}
+@property --accent-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e0533a;
+}
+@property --muted {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(244 238 227 / 0.64);
+}
+@property --line {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(244 238 227 / 0.16);
+}
+
+:root {
+  /* Palette: lacquer ink, raw silk, indigo night, silk-thread gold, vermilion. */
+  --ink: #0b0d1a;
+  --silk: #f4eee3;
+  --indigo: #121741;
+  --gold: #e8b04f;
+  --vermilion: #e0533a;
+  --jade: #3f7d6b;
+
+  --font-display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-body: "Be Vietnam Pro", system-ui, sans-serif;
+
+  --fs-hero: clamp(3.4rem, 16vw, 12.5rem);
+  --fs-h2: clamp(2.5rem, 6.4vw, 6rem);
+  --fs-h3: clamp(1.65rem, 3vw, 2.75rem);
+  --fs-lead: clamp(1.15rem, 1.7vw, 1.6rem);
+  --fs-body: clamp(1rem, 1.05vw, 1.0625rem);
+  --fs-small: 0.8125rem;
+
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --section-pad: clamp(5.5rem, 14vh, 10rem);
+  --radius: 1.25rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+  transition:
+    --bg 0.8s ease,
+    --fg 0.8s ease,
+    --accent 0.8s ease,
+    --accent-2 0.8s ease,
+    --muted 0.8s ease,
+    --line 0.8s ease;
+}
+
+:root,
+[data-theme="ink"] {
+  --bg: var(--ink);
+  --fg: var(--silk);
+  --accent: var(--gold);
+  --accent-2: var(--vermilion);
+  --muted: rgb(244 238 227 / 0.64);
+  --line: rgb(244 238 227 / 0.16);
+}
+
+:root[data-theme="silk"] {
+  --bg: var(--silk);
+  --fg: #14162b;
+  --accent: #9a5a0f;
+  --accent-2: #b8361f;
+  --muted: rgb(20 22 43 / 0.7);
+  --line: rgb(20 22 43 / 0.14);
+  color-scheme: light;
+}
+
+:root[data-theme="indigo"] {
+  --bg: var(--indigo);
+  --fg: var(--silk);
+  --accent: #f2be62;
+  --accent-2: #ff7a59;
+  --muted: rgb(244 238 227 / 0.68);
+  --line: rgb(244 238 227 / 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+}
+
+em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* ---------- Shared building blocks ---------- */
+
+.section {
+  position: relative;
+  padding: var(--section-pad) var(--gutter);
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.kicker::before {
+  content: "";
+  width: 2.5rem;
+  height: 1px;
+  background: currentColor;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-variation-settings: "opsz" 96;
+  text-wrap: balance;
+}
+
+.lead {
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Masked line: children slide up from below. Extra padding keeps stacked
+   Vietnamese diacritics (Ễ, Ộ) inside the clip. */
+.mask {
+  display: block;
+  overflow: clip;
+  padding-block: 0.2em 0.08em;
+  margin-block: -0.2em -0.08em;
+}
+
+/* Emphasised words inside a word-by-word reveal. */
+.w.em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  background-image: linear-gradient(var(--accent-2), var(--accent-2));
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 100% 0.14em;
+}
+
+.char,
+.word {
+  display: inline-block;
+}
+
+.word {
+  white-space: nowrap;
+}
+
+/* ---------- Story thread: behind every chapter's content ---------- */
+
+.story-thread {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.story-thread canvas {
+  width: 100%;
+  height: 100%;
+}
+
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Where the thread passes. Each anchor's parent is its positioning context. */
+.thread-anchor {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  pointer-events: none;
+}
+
+.thread-anchor--hero {
+  left: 50%;
+  bottom: 1.25rem;
+}
+
+.thread-anchor--cocoon {
+  left: 50%;
+  top: 37.5%;
+}
+
+.thread-anchor--about-end {
+  bottom: 0;
+  left: calc(var(--gutter) * 0.5);
+}
+
+.thread-anchor--journey,
+.thread-anchor--station {
+  left: calc(var(--gutter) * -0.5);
+}
+
+.thread-anchor--journey {
+  bottom: 0;
+}
+
+.thread-anchor--station {
+  top: 1.4rem;
+}
+
+.journey.is-horizontal .thread-anchor--journey {
+  left: calc(var(--gutter) + 1rem);
+  bottom: 3.25rem;
+}
+
+.journey.is-horizontal .thread-anchor--station {
+  display: none;
+}
+
+/* Principles and projects share a lane down the content's left edge. */
+.thread-anchor--edge,
+.thread-anchor--row {
+  left: max(-1.25rem, calc(var(--gutter) * -0.5));
+}
+
+.thread-anchor--edge {
+  top: 3rem;
+}
+
+.thread-anchor--row {
+  top: 50%;
+}
+
+.thread-anchor--center {
+  left: 50%;
+  top: 50%;
+}
+
+/* Network hub and result positions, as fractions of the 520×440 network drawing. */
+.thread-anchor--hub {
+  left: 13.46%;
+  top: 50%;
+}
+
+.thread-anchor--result {
+  left: 88.85%;
+  top: 50%;
+}
+
+.thread-anchor--skills {
+  left: 50%;
+  top: 0;
+}
+
+/* Where the contact knot's path begins: 73% down an SVG placed 12% down, 40% tall. */
+.thread-anchor--contact {
+  left: 0;
+  top: 41.3%;
+}
+
+@media (min-width: 900px) {
+  .thread-anchor--about-end {
+    left: calc(var(--gutter) + min(10rem, 24vw));
+  }
+}
+
+/* ---------- Chrome: header, rail, grain, curtain ---------- */
+
+.site-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem var(--gutter);
+  color: var(--silk);
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+.site-header a {
+  pointer-events: auto;
+  text-decoration: none;
+}
+
+.monogram {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.monogram span {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pill-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid rgb(244 238 227 / 0.4);
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+
+.pill-link:hover {
+  background: var(--silk);
+  color: #000;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-size: 220px 220px;
+}
+
+.thread-cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.thread-cursor canvas,
+.silk-canvas canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--silk);
+  pointer-events: none;
+}
+
+.curtain-inner {
+  display: grid;
+  justify-items: center;
+  gap: 1.25rem;
+  width: min(80vw, 34rem);
+}
+
+.curtain-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3.4vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.curtain-thread {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--vermilion), transparent);
+  transform-origin: left center;
+}
+
+.curtain-count {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-small);
+  letter-spacing: 0.2em;
+  color: rgb(244 238 227 / 0.6);
+}
+
+/* ---------- Chapter rail ---------- */
+
+.rail {
+  position: fixed;
+  top: 50%;
+  right: clamp(0.75rem, 1.6vw, 1.75rem);
+  z-index: 55;
+  display: none;
+  transform: translateY(-50%);
+}
+
+@media (min-width: 900px) {
+  .rail {
+    display: block;
+  }
+}
+
+.rail-track {
+  position: relative;
+  display: grid;
+  gap: 1.35rem;
+  padding-block: 0.25rem;
+}
+
+.rail-track::before,
+.rail-fill {
+  content: "";
+  position: absolute;
+  top: 0.25rem;
+  bottom: 0.25rem;
+  right: 0.3rem;
+  width: 1px;
+  background: var(--line);
+}
+
+.rail-fill {
+  z-index: 1;
+}
+
+.rail-track li {
+  position: relative;
+  z-index: 2;
+}
+
+.rail-fill {
+  background: linear-gradient(var(--accent), var(--accent-2));
+  transform-origin: top center;
+  transform: scaleY(0);
+}
+
+.rail-knot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--fg);
+}
+
+.rail-knot-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  background: var(--bg);
+  transition:
+    transform 0.4s var(--ease-out),
+    background 0.4s,
+    border-color 0.4s;
+}
+
+.rail-knot-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s var(--ease-out);
+}
+
+.rail-knot:hover .rail-knot-label,
+.rail-knot:focus-visible .rail-knot-label,
+.rail-knot[aria-current] .rail-knot-label {
+  opacity: 1;
+  transform: none;
+}
+
+.rail-knot[aria-current] .rail-knot-dot {
+  transform: scale(1.35);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.chapter-badge {
+  position: fixed;
+  left: var(--gutter);
+  bottom: 1rem;
+  z-index: 55;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgb(11 13 26 / 0.72);
+  color: var(--silk);
+  font-size: var(--fs-small);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.chapter-badge strong {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+}
+
+@media (min-width: 900px) {
+  .chapter-badge {
+    display: none;
+  }
+}
+
+.progress-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 65;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--vermilion));
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+/* ---------- Marquee ---------- */
+
+.marquee {
+  overflow: clip;
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+  border-block: 1px solid var(--line);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+}
+
+.marquee-group {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  padding-right: clamp(1.5rem, 3vw, 3rem);
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 8vw, 7.5rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.marquee-group span:nth-child(4n + 1) {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--fg);
+}
+
+.marquee-group span:nth-child(4n + 3) {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.marquee-star {
+  color: var(--accent-2);
+  font-size: 0.5em;
+}
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem var(--gutter) 4.5rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+@media (min-width: 900px) {
+  .site-footer {
+    padding-bottom: 2rem;
+  }
+}
+
+.site-footer nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.site-footer a {
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--fg);
+}
+
+/* ---------- Startup failure (rendered without React) ---------- */
+
+[data-startup-error] {
+  max-width: 40rem;
+  margin: 20vh auto;
+  padding: 0 var(--gutter);
+  white-space: pre-line;
+  font-size: 1.125rem;
+}
+
+/* ---------- Easter eggs ---------- */
+
+.silk-burst {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  pointer-events: none;
+}
+
+.silk-burst canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.egg-tracker {
+  position: fixed;
+  right: var(--gutter);
+  bottom: 1rem;
+  z-index: 75;
+  display: grid;
+  justify-items: end;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .egg-tracker {
+    right: auto;
+    left: 50%;
+    bottom: 1.5rem;
+    justify-items: center;
+    transform: translateX(-50%);
+  }
+}
+
+.egg-toast {
+  max-width: min(26rem, calc(100vw - 2 * var(--gutter)));
+  padding: 0.75rem 1.1rem;
+  border: 1px solid rgb(232 176 79 / 0.5);
+  border-radius: 1rem;
+  background: rgb(11 13 26 / 0.88);
+  color: var(--silk);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: egg-in 0.6s var(--ease-out);
+}
+
+.egg-toast span {
+  color: var(--gold);
+}
+
+.egg-count {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.egg-count.is-complete {
+  background: linear-gradient(90deg, var(--gold), var(--vermilion));
+  color: var(--silk);
+}
+
+@keyframes egg-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .egg-toast {
+    animation: none;
+  }
+}
+
+.moth {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 86;
+  width: 4.5rem;
+  margin: -1.7rem 0 0 -2.25rem;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.moth-wing path {
+  fill: #f8f1e2;
+  stroke: #c99a4a;
+  stroke-width: 0.8;
+}
+
+.moth-wing .moth-vein {
+  fill: none;
+  stroke: #d9b878;
+  stroke-width: 0.6;
+}
+
+.moth-body {
+  fill: #dccaa6;
+  stroke: #a98448;
+  stroke-width: 0.8;
+}
+
+.moth-antenna {
+  fill: none;
+  stroke: #a98448;
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.footer-hint {
+  flex-basis: 100%;
+  order: 3;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--accent);
+}

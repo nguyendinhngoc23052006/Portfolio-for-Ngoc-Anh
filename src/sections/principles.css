@@ -1,0 +1,187 @@
+.principles-head {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 1300px;
+  margin: 0 auto clamp(3rem, 8vh, 5rem);
+}
+
+.principle-stack {
+  display: grid;
+  gap: 6vh;
+  max-width: 1300px;
+  margin-inline: auto;
+  padding-bottom: 8vh;
+}
+
+.principle {
+  position: sticky;
+  top: calc(12vh + var(--i) * 1.75rem);
+  display: grid;
+  gap: 1.5rem;
+  min-height: min(72svh, 40rem);
+  padding: clamp(1.5rem, 4vw, 4rem);
+  border-radius: calc(var(--radius) * 1.4);
+  color: var(--silk);
+  overflow: clip;
+  transform-origin: 50% 0;
+  box-shadow: 0 -1.5rem 3rem -1.5rem rgb(11 13 26 / 0.35);
+}
+
+.principle--0 {
+  background: radial-gradient(circle at 85% 20%, #2a3384, #161c4c 60%);
+}
+.principle--1 {
+  background: radial-gradient(circle at 85% 20%, #e46a47, #a8321d 65%);
+}
+.principle--2 {
+  background: radial-gradient(circle at 85% 20%, #f6cf84, #d99a32 65%);
+  color: var(--ink);
+}
+.principle--3 {
+  background: radial-gradient(circle at 85% 20%, #262a48, var(--ink) 65%);
+}
+
+.principle-copy {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.principle-number {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 10vw, 8.5rem);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px currentColor;
+  opacity: 0.55;
+}
+
+.principle-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 5.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+}
+
+.principle-body {
+  max-width: 34rem;
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  opacity: 0.88;
+  text-wrap: pretty;
+}
+
+.principle-glyph {
+  display: grid;
+  place-items: center;
+}
+
+.principle-glyph svg {
+  width: min(100%, 20rem);
+  overflow: visible;
+}
+
+@media (min-width: 900px) {
+  .principle {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: center;
+  }
+}
+
+@media (max-width: 899px) {
+  .principle {
+    top: calc(5rem + var(--i) * 1rem);
+    min-height: auto;
+  }
+
+  .principle-glyph svg {
+    width: min(70%, 13rem);
+  }
+}
+
+/* Glyph ink: drawn in the card's own text color. */
+.pg-cell {
+  fill: currentColor;
+  opacity: 0.85;
+}
+.pg-cell:nth-child(3n) {
+  fill: var(--gold);
+}
+.pg-link {
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.45;
+}
+.pg-node {
+  fill: currentColor;
+}
+.pg-core {
+  fill: var(--gold);
+}
+.pg-axis {
+  stroke: currentColor;
+  opacity: 0.5;
+}
+.pg-bar {
+  fill: currentColor;
+  opacity: 0.8;
+}
+.pg-trend {
+  fill: none;
+  stroke: var(--vermilion);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pg-lens circle {
+  fill: rgb(255 255 255 / 0.25);
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+.pg-lens line {
+  stroke: var(--ink);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.pg-blob {
+  fill: var(--vermilion);
+  opacity: 0.9;
+}
+.pg-handle {
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.pg-curve {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 3;
+}
+.pg-anchor {
+  fill: var(--ink);
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.pg-grip {
+  fill: currentColor;
+}
+
+.principle-glyph {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.principle-glyph svg {
+  transition: transform 0.5s var(--ease-out);
+}
+
+.principle-glyph:hover svg {
+  transform: scale(1.04);
+}

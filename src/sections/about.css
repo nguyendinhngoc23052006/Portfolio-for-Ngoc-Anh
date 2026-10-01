@@ -1,0 +1,94 @@
+.about-grid {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 5rem);
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.about-aside {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+}
+
+.about-heading {
+  font-size: clamp(2.8rem, 7vw, 6.5rem);
+}
+
+.cocoon {
+  width: min(100%, 20rem);
+  color: var(--accent);
+  overflow: visible;
+}
+
+.cocoon-loop {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.9;
+  opacity: 0.55;
+}
+
+.cocoon-loop--b {
+  stroke: var(--accent-2);
+  opacity: 0.35;
+}
+
+.cocoon-strand {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.about-body {
+  display: grid;
+  gap: clamp(1.75rem, 4vh, 3rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.35vw, 2.15rem);
+  font-weight: 500;
+  line-height: 1.32;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 48;
+  text-wrap: pretty;
+}
+
+@media (min-width: 900px) {
+  .about-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .about-aside {
+    position: sticky;
+    top: 14vh;
+    align-self: start;
+  }
+
+  .about-body {
+    padding-top: 12vh;
+    padding-bottom: 20vh;
+  }
+}
+
+.cocoon-button {
+  position: relative;
+  justify-self: start;
+  width: min(100%, 20rem);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cocoon-button .cocoon {
+  width: 100%;
+}
+
+@media (max-width: 899px) {
+  .cocoon-button {
+    justify-self: end;
+    width: min(60%, 14rem);
+    margin-top: -1rem;
+  }
+}
