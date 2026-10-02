@@ -1,10 +1,18 @@
+import { useEffect, useRef } from "react";
 import { ThreadAnchor } from "../components/ThreadAnchor";
 import { profile } from "../content/profile";
 import type { Content } from "../content/types";
-import { gsap, useScene } from "../lib/motion";
+import { gsap, ScrollTrigger, useScene } from "../lib/motion";
+import {
+  ARC_LENGTH,
+  arcPoint,
+  bindGauge,
+  createGaugeSweep,
+  type GaugeSweep,
+  KNOB_RADIUS,
+} from "./skillsGauge";
+import { bindTilt, bindToolTiles } from "./skillsTiles";
 import "./skills.css";
-
-const ARC_LENGTH = 100;
 
 /** One tick per band score, 0 to max, around the gauge's half circle. */
 function gaugeTicks(max: number) {
@@ -33,6 +41,9 @@ export function Skills({ text }: { text: Content["skills"] }) {
   const filled = (score / max) * ARC_LENGTH;
   const vendors = [...new Set(profile.tools.map((tool) => splitTool(tool).vendor))];
 
+  const knob = arcPoint(score / max);
+  const sweepRef = useRef<GaugeSweep | null>(null);
+
   const ref = useScene<HTMLElement>((root) => {
     gsap.from(".tool", {
       rotateX: -90,
@@ -45,48 +56,34 @@ export function Skills({ text }: { text: Content["skills"] }) {
       scrollTrigger: { trigger: ".tool-groups", start: "top 80%" },
     });
 
-    const arc = root.querySelector<SVGPathElement>(".ielts-fill");
-    const scoreLabel = root.querySelector(".ielts-score");
-    const counter = { value: 0 };
-    gsap.set(arc, { attr: { "stroke-dasharray": `0 ${ARC_LENGTH}` } });
-    gsap.set(scoreLabel, { textContent: "0.0" });
-    gsap.to(counter, {
-      value: score,
-      duration: 2,
-      ease: "power3.out",
-      scrollTrigger: { trigger: ".ielts", start: "top 75%" },
-      onUpdate: () => {
-        arc?.setAttribute(
-          "stroke-dasharray",
-          `${(counter.value / max) * ARC_LENGTH} ${ARC_LENGTH}`,
-        );
-        if (scoreLabel) scoreLabel.textContent = counter.value.toFixed(1);
+    const sweep = createGaugeSweep(root, score, max);
+    sweep.reset();
+    const trigger = ScrollTrigger.create({
+      trigger: root.querySelector(".ielts"),
+      start: "top 75%",
+      once: true,
+      onEnter: () => {
+        if (!sweep.hasPlayed()) sweep.play(false);
       },
     });
-
-    // Tilt each tile toward the pointer.
-    const tiles = gsap.utils.toArray<HTMLElement>(".tool", root);
-    const cleanups = tiles.map((tile) => {
-      const onMove = (event: PointerEvent) => {
-        const box = tile.getBoundingClientRect();
-        gsap.to(tile, {
-          rotateY: ((event.clientX - box.left) / box.width - 0.5) * 18,
-          rotateX: -((event.clientY - box.top) / box.height - 0.5) * 18,
-          duration: 0.4,
-        });
-      };
-      const onLeave = () => gsap.to(tile, { rotateX: 0, rotateY: 0, duration: 0.6 });
-      tile.addEventListener("pointermove", onMove);
-      tile.addEventListener("pointerleave", onLeave);
-      return () => {
-        tile.removeEventListener("pointermove", onMove);
-        tile.removeEventListener("pointerleave", onLeave);
-      };
-    });
+    sweepRef.current = sweep;
+    const untilt = bindTilt(root);
     return () => {
-      for (const cleanup of cleanups) cleanup();
+      untilt();
+      trigger.kill();
+      sweep.stop();
+      sweepRef.current = null;
     };
   });
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const unbind = [bindToolTiles(root), bindGauge(root, () => sweepRef.current)];
+    return () => {
+      for (const cleanup of unbind) cleanup();
+    };
+  }, [ref]);
 
   return (
     <section
@@ -138,6 +135,7 @@ export function Skills({ text }: { text: Content["skills"] }) {
               {gaugeTicks(max).map((tick) => (
                 <line key={`tick-${tick.value}`} className="ielts-tick" {...tick.line} />
               ))}
+              <circle className="ielts-knob" cx={knob.x} cy={knob.y} r={KNOB_RADIUS} />
             </svg>
             <figcaption>
               <span className="ielts-reading">

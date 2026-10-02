@@ -14,6 +14,7 @@ export const vi: Content = {
     contact: "Liên hệ",
     backToTop: "Lên đầu trang",
     chapterRail: "Các chương",
+    sound: "Âm thanh",
   },
   chapters: {
     hero: "Mở đầu",
@@ -24,11 +25,12 @@ export const vi: Content = {
     education: "Học vấn",
     direction: "Định hướng",
     skills: "Kỹ năng",
+    hobby: "Ngoài giờ",
     contact: "Liên hệ",
   },
   present: "Nay",
   hero: {
-    kicker: "01 — Trang mở đầu",
+    kicker: "Trang mở đầu",
     tagline: ["Kinh doanh", "Dự án", "Sáng tạo"],
     intro: [
       "Mình là sinh viên *Kinh tế Đối ngoại* tại *Đại học Ngoại thương*, với trải nghiệm trong quản lý dự án, vận hành kinh doanh và truyền thông – thiết kế.",
@@ -38,7 +40,7 @@ export const vi: Content = {
     scrollHint: "Cuộn xuống",
   },
   about: {
-    kicker: "02 — Về mình",
+    kicker: "Về mình",
     heading: "Mình là Ngọc Anh.",
     paragraphs: [
       "Hiện tại, mình đang theo học ngành Kinh tế Đối ngoại tại Đại học Ngoại thương.",
@@ -49,7 +51,7 @@ export const vi: Content = {
     ],
   },
   journey: {
-    kicker: "03 — Hành trình",
+    kicker: "Hành trình",
     heading: "Những trải nghiệm đã định hình cách mình làm việc.",
     items: {
       design: {
@@ -96,7 +98,7 @@ export const vi: Content = {
     vmoTracks: ["Tiến độ", "Rủi ro", "Thay đổi", "Báo cáo"],
   },
   principles: {
-    kicker: "04 — Điều mình mang đến",
+    kicker: "Điều mình mang đến",
     heading: "Cách mình làm việc",
     items: [
       {
@@ -118,7 +120,7 @@ export const vi: Content = {
     ],
   },
   projects: {
-    kicker: "05 — Dự án & sản phẩm",
+    kicker: "Dự án & sản phẩm",
     heading: "Những điều mình đã thực hiện",
     lead: "Mỗi dự án là một cơ hội để mình thử một cách làm mới, giải quyết một vấn đề cụ thể và tích lũy thêm kinh nghiệm.",
     items: [
@@ -141,14 +143,14 @@ export const vi: Content = {
     ],
   },
   education: {
-    kicker: "06 — Học vấn",
+    kicker: "Học vấn",
     items: {
       ftu: { school: "Đại học Ngoại thương", major: "Kinh tế Đối ngoại" },
       hnams: { school: "THPT Chuyên Hà Nội – Amsterdam", major: "Chuyên Toán" },
     },
   },
   direction: {
-    kicker: "07 — Định hướng",
+    kicker: "Định hướng",
     heading: "Mình đang hướng đến đâu?",
     focus: "Logistics & Chuỗi cung ứng",
     paragraphs: [
@@ -165,13 +167,47 @@ export const vi: Content = {
     },
   },
   skills: {
-    kicker: "08 — Kỹ năng",
+    kicker: "Kỹ năng",
     toolsHeading: "Thành thạo các công cụ",
     languageHeading: "Ngôn ngữ",
     language: "Tiếng Anh",
   },
+  hobby: {
+    kicker: "Ngoài giờ",
+    heading: "Còn khi rảnh, mình chơi guitar.",
+    lead: "Ngoài giờ học và làm việc, mình chơi guitar. Cây đàn bên dưới là của bạn — thử *gảy vài hợp âm* nhé.",
+    guitar: {
+      stageLabel:
+        "Cây đàn guitar: rê chuột ngang các dây trên thân đàn để quạt, bấm giữ trên cần đàn để bấm phím.",
+      start: "Bấm để nghe đàn",
+      soundOff: "Âm thanh đang tắt — bấm để bật",
+      chords: "Hợp âm",
+      strings: "Dây đàn",
+      string: "Dây",
+      strumDown: "Quạt xuống",
+      strumUp: "Quạt lên",
+      capo: "Capo",
+      capoDown: "Hạ capo",
+      capoUp: "Nâng capo",
+      fullscreen: "Toàn màn hình",
+      exitFullscreen: "Thoát toàn màn hình",
+      pointerHelp:
+        "Rê chuột ngang các dây trên thân đàn để quạt, giữ chuột yên để chặn tiếng. Bấm giữ trên cần đàn để bấm phím, kéo dọc dây để vuốt nốt.",
+      touchHelp:
+        "Vuốt ngang các dây trên thân đàn để quạt, chạm lên cần đàn để bấm nốt, giữ yên ngón tay trên thân đàn để chặn tiếng.",
+      keys: [
+        { keys: "1–6", action: "gảy từng dây (dây 1 mảnh nhất)" },
+        { keys: "Q … ]", action: "chọn hợp âm" },
+        { keys: "Space", action: "quạt xuống" },
+        { keys: "Shift + Space", action: "quạt lên" },
+        { keys: "↑ ↓", action: "capo" },
+        { keys: "0", action: "buông hợp âm" },
+        { keys: "Esc", action: "chặn tiếng" },
+      ],
+    },
+  },
   contact: {
-    kicker: "09 — Liên hệ",
+    kicker: "Liên hệ",
     heading: "Cùng kết nối nhé.",
     body: "Nếu bạn muốn trao đổi về một dự án, một cơ hội hợp tác hoặc đơn giản là kết nối, mình rất vui được trò chuyện.",
     emailLabel: "Email",
@@ -181,17 +217,21 @@ export const vi: Content = {
   },
   marquee: ["Kinh doanh", "Dự án", "Sáng tạo", "Logistics", "Chuỗi cung ứng"],
   eggs: {
-    hint: "Trang này giấu {count} bí mật nho nhỏ — thử gảy sợi tơ, gõ nhẹ vào kén, hay gõ tên mình xem.",
+    hint: "Trang này giấu {count} bí mật nho nhỏ — thử gảy đàn tơ ở đầu trang, gõ nhẹ vào kén, hay gõ tên mình xem. Nhớ bật âm thanh nhé.",
     found: "Bí mật",
     allFound: "Bạn đã tìm ra tất cả bí mật! Cảm ơn bạn đã ghé chơi lâu như vậy.",
     cocoonLabel: "Gõ nhẹ vào kén tằm",
     replayLabel: "Xem lại hình minh hoạ",
     messages: {
       pluck: "Bạn vừa gảy sợi tơ. Nghe thấy không?",
+      strum: "Một khúc đàn tranh trên dây tơ — hay lắm!",
       hatch: "Kén đã nở — một chú ngài tơ vừa bay ra!",
       secretWord: "Bạn biết tên mình rồi đó.",
       dispatch: "Một đơn hàng vừa được giao đến Kết quả.",
       replay: "Làm lại lần nữa — vẫn gọn gàng như cũ.",
+      spin: "Bạn vừa quay cả thế giới. Hàng vẫn giao đúng hẹn.",
+      knot: "Nút thắt đã buộc. Cùng kết nối nhé!",
+      progression: "C – G – Am – F: bốn hợp âm của cả nghìn bài hát. Bạn chơi được rồi đó!",
     },
   },
 };

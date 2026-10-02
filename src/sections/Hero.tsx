@@ -3,7 +3,15 @@ import { SilkCanvas } from "../components/SilkCanvas";
 import { Chars, Rich } from "../components/Text";
 import { ThreadAnchor } from "../components/ThreadAnchor";
 import type { Content } from "../content/types";
-import { gsap, INTRO_SECONDS, magnetize, useScene } from "../lib/motion";
+import {
+  gsap,
+  INTRO_SECONDS,
+  isFinePointer,
+  magnetize,
+  prefersReducedMotion,
+  useScene,
+} from "../lib/motion";
+import { noteAt, panFor, pluck, rateLimit } from "../lib/sound";
 import "./hero.css";
 
 interface Props {
@@ -13,6 +21,24 @@ interface Props {
 
 /** Set once the entrance finishes, so a resize across a breakpoint does not blank the hero again. */
 let hasRevealed = false;
+
+/** Thirteen letters from the third note land exactly on the scale's top note. */
+const FIRST_LETTER_NOTE = 2;
+
+function bounceLetter(letter: HTMLElement, index: number): gsap.core.Timeline {
+  const lift = letter.offsetHeight * 0.09;
+  const tilt = (index % 2 === 0 ? -1 : 1) * 7;
+  return gsap
+    .timeline()
+    .to(letter, { y: -lift, rotate: tilt, duration: 0.1, ease: "power2.out", overwrite: "auto" })
+    .to(letter, {
+      y: 0,
+      rotate: 0,
+      duration: 1.1,
+      ease: "elastic.out(1, 0.35)",
+      overwrite: "auto",
+    });
+}
 
 export function Hero({ name, text }: Props) {
   const [familyName, ...givenNames] = name.split(" ");
@@ -63,6 +89,30 @@ export function Hero({ name, text }: Props) {
       .to(".hero-name", { opacity: 0.15, ease: "none" }, 0)
       .to(".hero-bottom", { y: -80, opacity: 0, ease: "none" }, 0);
   });
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || !isFinePointer()) return;
+    const isStill = prefersReducedMotion();
+    const letters = Array.from(root.querySelectorAll<HTMLElement>(".hero-name .char"));
+    const bounces: (gsap.core.Timeline | undefined)[] = [];
+    const removers = letters.map((letter, index) => {
+      const canPlay = rateLimit(150);
+      const onEnter = (event: PointerEvent) => {
+        if (!canPlay()) return;
+        pluck(noteAt(FIRST_LETTER_NOTE + index), { gain: 0.4, pan: panFor(event.clientX) });
+        if (isStill) return;
+        bounces[index]?.kill();
+        bounces[index] = bounceLetter(letter, index);
+      };
+      letter.addEventListener("pointerenter", onEnter);
+      return () => letter.removeEventListener("pointerenter", onEnter);
+    });
+    return () => {
+      for (const remove of removers) remove();
+      for (const bounce of bounces) bounce?.kill();
+    };
+  }, [ref]);
 
   return (
     <section

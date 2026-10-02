@@ -12,11 +12,13 @@ import { ThreadCursor } from "./components/ThreadCursor";
 import { profile } from "./content/profile";
 import type { Content, Locale } from "./content/types";
 import { ScrollTrigger, startSmoothScroll } from "./lib/motion";
+import { installAudioUnlock } from "./lib/sound";
 import { About } from "./sections/About";
 import { Contact } from "./sections/Contact";
 import { Direction } from "./sections/Direction";
 import { Education } from "./sections/Education";
 import { Hero } from "./sections/Hero";
+import { Hobby } from "./sections/Hobby";
 import { Journey } from "./sections/Journey";
 import { Principles } from "./sections/Principles";
 import { Projects } from "./sections/Projects";
@@ -30,9 +32,13 @@ interface Props {
 export function App({ locale, content }: Props) {
   useEffect(() => {
     const stopSmoothScroll = startSmoothScroll();
+    const removeAudioUnlock = installAudioUnlock();
     // Web fonts change line lengths, and with them every pinned distance.
     document.fonts?.ready.then(() => ScrollTrigger.refresh());
-    return stopSmoothScroll;
+    return () => {
+      stopSmoothScroll();
+      removeAudioUnlock();
+    };
   }, []);
 
   return (
@@ -53,6 +59,7 @@ export function App({ locale, content }: Props) {
         <Education text={content.education} present={content.present} />
         <Direction text={content.direction} />
         <Skills text={content.skills} />
+        <Hobby text={content.hobby} />
         <Contact text={content.contact} />
       </main>
       <Footer name={profile.name} locale={locale} nav={content.nav} eggHint={content.eggs.hint} />

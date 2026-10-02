@@ -15,6 +15,7 @@ export const en: Content = {
     contact: "Contact",
     backToTop: "Back to top",
     chapterRail: "Chapters",
+    sound: "Sound",
   },
   chapters: {
     hero: "Opening",
@@ -25,11 +26,12 @@ export const en: Content = {
     education: "Education",
     direction: "Direction",
     skills: "Skills",
+    hobby: "Off-hours",
     contact: "Contact",
   },
   present: "Present",
   hero: {
-    kicker: "01 — Opening",
+    kicker: "Opening",
     tagline: ["Business", "Projects", "Creativity"],
     intro: [
       "I'm an *International Economics* student at *Foreign Trade University*, with hands-on experience in project management, business operations, and communications & design.",
@@ -39,7 +41,7 @@ export const en: Content = {
     scrollHint: "Scroll",
   },
   about: {
-    kicker: "02 — About me",
+    kicker: "About me",
     heading: "I'm Ngọc Anh.",
     paragraphs: [
       "I'm currently studying International Economics at Foreign Trade University.",
@@ -50,7 +52,7 @@ export const en: Content = {
     ],
   },
   journey: {
-    kicker: "03 — Journey",
+    kicker: "Journey",
     heading: "The experiences that shaped how I work.",
     items: {
       design: {
@@ -97,7 +99,7 @@ export const en: Content = {
     vmoTracks: ["Progress", "Risks", "Changes", "Reports"],
   },
   principles: {
-    kicker: "04 — What I bring",
+    kicker: "What I bring",
     heading: "How I work",
     items: [
       {
@@ -119,7 +121,7 @@ export const en: Content = {
     ],
   },
   projects: {
-    kicker: "05 — Projects & work",
+    kicker: "Projects & work",
     heading: "What I've made happen",
     lead: "Every project is a chance to try a new approach, solve a specific problem, and build more experience.",
     items: [
@@ -142,7 +144,7 @@ export const en: Content = {
     ],
   },
   education: {
-    kicker: "06 — Education",
+    kicker: "Education",
     items: {
       ftu: { school: "Foreign Trade University", major: "International Economics" },
       hnams: {
@@ -152,7 +154,7 @@ export const en: Content = {
     },
   },
   direction: {
-    kicker: "07 — Direction",
+    kicker: "Direction",
     heading: "Where am I headed?",
     focus: "Logistics & Supply Chain",
     paragraphs: [
@@ -169,13 +171,47 @@ export const en: Content = {
     },
   },
   skills: {
-    kicker: "08 — Skills",
+    kicker: "Skills",
     toolsHeading: "Proficient with",
     languageHeading: "Languages",
     language: "English",
   },
+  hobby: {
+    kicker: "Off the clock",
+    heading: "And when I'm free, I play guitar.",
+    lead: "Outside class and work, I play guitar. This one's yours — try *strumming a few chords*.",
+    guitar: {
+      stageLabel:
+        "Guitar: sweep the mouse across the strings over the body to strum; press and hold on the neck to fret a note.",
+      start: "Click to hear it",
+      soundOff: "Sound is off — click to turn it on",
+      chords: "Chords",
+      strings: "Strings",
+      string: "String",
+      strumDown: "Strum down",
+      strumUp: "Strum up",
+      capo: "Capo",
+      capoDown: "Lower the capo",
+      capoUp: "Raise the capo",
+      fullscreen: "Full screen",
+      exitFullscreen: "Exit full screen",
+      pointerHelp:
+        "Sweep the mouse across the strings over the body to strum; hold it still to mute. Press and hold on the neck to fret a note, and drag along the string to slide.",
+      touchHelp:
+        "Swipe across the strings over the body to strum, tap the neck to play a note, and hold a finger still on the body to mute.",
+      keys: [
+        { keys: "1–6", action: "pluck one string (1 is the thinnest)" },
+        { keys: "Q … ]", action: "choose a chord" },
+        { keys: "Space", action: "strum down" },
+        { keys: "Shift + Space", action: "strum up" },
+        { keys: "↑ ↓", action: "capo" },
+        { keys: "0", action: "let go of the chord" },
+        { keys: "Esc", action: "mute" },
+      ],
+    },
+  },
   contact: {
-    kicker: "09 — Contact",
+    kicker: "Contact",
     heading: "Let's connect.",
     body: "If you'd like to talk about a project, a collaboration, or simply connect, I'd love to chat.",
     emailLabel: "Email",
@@ -185,17 +221,21 @@ export const en: Content = {
   },
   marquee: ["Business", "Projects", "Creativity", "Logistics", "Supply Chain"],
   eggs: {
-    hint: "This page hides {count} small secrets — try plucking the silk, tapping the cocoon, or typing my name.",
+    hint: "This page hides {count} small secrets — try strumming the silk at the top, tapping the cocoon, or typing my name. Turn the sound on.",
     found: "Secrets",
     allFound: "You found every secret! Thanks for staying to play.",
     cocoonLabel: "Tap the silk cocoon",
     replayLabel: "Replay the illustration",
     messages: {
       pluck: "You just plucked the silk. Hear it hum?",
+      strum: "A đàn tranh tune on silk strings — lovely!",
       hatch: "The cocoon hatched — a silk moth just flew out!",
       secretWord: "Now you know my name.",
       dispatch: "One order just delivered to Results.",
       replay: "Once more — just as neat as before.",
+      spin: "You just spun the world. The cargo still arrived on time.",
+      knot: "Knot tied. Let's connect!",
+      progression: "C – G – Am – F: the four chords behind a thousand songs. You can play!",
     },
   },
 };

@@ -5,7 +5,11 @@ import { profile, toTelHref } from "../content/profile";
 import type { Content } from "../content/types";
 import { silkBurst } from "../lib/eggs";
 import { gsap, magnetize, useScene } from "../lib/motion";
+import { attachContactPlay, playCopied } from "./contactPlay";
 import "./contact.css";
+
+const KNOT_PATH =
+  "M-20 220 C 220 220, 300 60, 470 80 S 640 260, 560 250 S 470 120, 640 90 S 860 170, 1220 140";
 
 export function Contact({ text }: { text: Content["contact"] }) {
   const emailRef = useRef<HTMLAnchorElement>(null);
@@ -29,6 +33,7 @@ export function Contact({ text }: { text: Content["contact"] }) {
       () => {
         setIsCopied(true);
         silkBurst(box.left + box.width / 2, box.top + box.height / 2, 0.5);
+        playCopied(box.left + box.width / 2);
       },
       () => setCanCopy(false),
     );
@@ -55,6 +60,9 @@ export function Contact({ text }: { text: Content["contact"] }) {
     });
   });
 
+  // Works with or without motion: reduced motion keeps the sound and drops the animation.
+  useEffect(() => (ref.current ? attachContactPlay(ref.current) : undefined), [ref]);
+
   return (
     <section
       ref={ref}
@@ -69,7 +77,9 @@ export function Contact({ text }: { text: Content["contact"] }) {
         preserveAspectRatio="none"
         aria-hidden="true"
       >
-        <path d="M-20 220 C 220 220, 300 60, 470 80 S 640 260, 560 250 S 470 120, 640 90 S 860 170, 1220 140" />
+        <path className="knot-glow" d={KNOT_PATH} />
+        <path className="knot-line" d={KNOT_PATH} />
+        <path className="knot-hit" d={KNOT_PATH} />
       </svg>
       <ThreadAnchor place="thread-anchor--contact" />
       <div className="contact-inner">

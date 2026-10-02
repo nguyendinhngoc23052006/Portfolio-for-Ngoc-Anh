@@ -334,3 +334,91 @@
   stroke-width: 1.5;
   stroke-dasharray: 3 4;
 }
+
+/* ---- Hands-on motifs ---- */
+
+.station-motif svg {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.dm-swatch,
+.sm-node,
+.vm-row,
+.station--dongAm .station-motif svg {
+  cursor: pointer;
+}
+
+.sm-parcel,
+.vm-today,
+.vm-check,
+.da-ripple,
+.da-snow,
+.da-knit,
+.da-glow {
+  pointer-events: none;
+}
+
+.dm-swatch {
+  stroke: transparent;
+  stroke-width: 2;
+  transition: stroke 0.2s;
+}
+
+.dm-swatch.is-picked {
+  stroke: var(--fg);
+}
+
+.sm-hit {
+  fill: transparent;
+}
+
+.sm-node circle {
+  transition: fill 0.2s;
+}
+
+.sm-parcel--sent {
+  fill: var(--gold);
+}
+
+.vm-track {
+  transition: fill 0.2s;
+}
+
+.vm-check {
+  fill: none;
+  stroke: var(--bg);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.da-ripple--click {
+  stroke-width: 2.4;
+}
+
+@media (hover: hover) {
+  .dm-swatch:hover {
+    stroke: var(--muted);
+  }
+
+  .dm-swatch.is-picked:hover {
+    stroke: var(--fg);
+  }
+
+  .sm-node:hover circle {
+    fill: var(--accent);
+  }
+
+  .vm-row:hover .vm-track {
+    fill: rgb(244 238 227 / 0.13);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dm-swatch,
+  .sm-node circle,
+  .vm-track {
+    transition: none;
+  }
+}

@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { isFinePointer, prefersReducedMotion } from "../lib/motion";
+import { drawCocoonGlow, type RopePoint, windInto } from "./cocoon";
+import { startSpinSilk } from "./spinSilk";
 
 const SEGMENTS = 26;
 const SEGMENT_LENGTH = 8;
@@ -24,7 +26,13 @@ export function ThreadCursor() {
     const context = canvas?.getContext("2d");
     if (!canvas || !context || prefersReducedMotion() || !isFinePointer()) return;
 
-    const points = Array.from({ length: SEGMENTS }, () => ({ x: 0, y: 0, px: 0, py: 0 }));
+    const points: RopePoint[] = Array.from({ length: SEGMENTS }, () => ({
+      x: 0,
+      y: 0,
+      px: 0,
+      py: 0,
+    }));
+    const spin = startSpinSilk();
     const colors = points.map((_, i) => mix(GOLD, VERMILION, i / SEGMENTS));
     const pointer = { x: 0, y: 0 };
     let hasPointer = false;
@@ -48,11 +56,7 @@ export function ThreadCursor() {
       }
     };
 
-    const step = () => {
-      frame = requestAnimationFrame(step);
-      context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      if (!hasPointer) return;
-
+    const swing = () => {
       points.forEach((p, i) => {
         if (i === 0) {
           p.px = p.x;
@@ -88,7 +92,9 @@ export function ThreadCursor() {
           }
         }
       }
+    };
 
+    const drawRope = () => {
       context.lineCap = "round";
       for (let i = 1; i < points.length; i++) {
         const a = points[i - 1];
@@ -110,14 +116,31 @@ export function ThreadCursor() {
       }
     };
 
+    const step = () => {
+      frame = requestAnimationFrame(step);
+      context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      const cocoon = spin.advance();
+      if (!hasPointer) return;
+      if (cocoon) {
+        drawCocoonGlow(context, cocoon);
+        windInto(points, cocoon);
+      } else {
+        swing();
+      }
+      drawRope();
+    };
+
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerdown", onPointerMove, { passive: true });
     frame = requestAnimationFrame(step);
     return () => {
       cancelAnimationFrame(frame);
+      spin.dispose();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerdown", onPointerMove);
     };
   }, []);
 

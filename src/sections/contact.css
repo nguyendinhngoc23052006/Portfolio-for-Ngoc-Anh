@@ -22,6 +22,24 @@
   opacity: 0.55;
 }
 
+.contact-knot path {
+  stroke-linecap: round;
+}
+
+.contact-knot .knot-glow {
+  stroke-width: 8;
+  opacity: 0;
+}
+
+/* The wide, invisible target for tugging the thread; it only exists where the thread is drawn. */
+.contact-knot .knot-hit {
+  stroke: transparent;
+  stroke-width: 28;
+  opacity: 1;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
 .contact-inner {
   position: relative;
   display: grid;
@@ -29,6 +47,28 @@
   width: 100%;
   max-width: 1300px;
   margin-inline: auto;
+}
+
+/* The text sits above the thread but must not swallow its clicks: only the words and controls
+   themselves take the pointer, the empty space around them lets it through to the knot. */
+.contact-inner,
+.contact-heading,
+.contact-channels,
+.channel {
+  pointer-events: none;
+}
+
+.contact-inner :is(a, button),
+.contact-heading .word,
+.contact-kicker,
+.contact-body,
+.channel-label {
+  pointer-events: auto;
+}
+
+.contact-kicker,
+.contact-body {
+  justify-self: start;
 }
 
 .contact-heading {

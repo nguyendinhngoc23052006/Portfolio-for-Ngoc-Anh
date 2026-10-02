@@ -111,6 +111,14 @@ html {
   text-size-adjust: 100%;
 }
 
+/* On touch screens sideways swipes play the harp and the guitar; they must never turn into
+   "go back". Trackpads keep their back gesture: the instruments there are played by pointer. */
+@media (pointer: coarse) {
+  html {
+    overscroll-behavior-x: none;
+  }
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -233,11 +241,19 @@ html.lenis body {
   color: var(--muted);
 }
 
+/* Chapter numbers are counted from the sections' order on the page, never written by hand. */
+main {
+  counter-reset: chapter;
+}
+
+main section[id] {
+  counter-increment: chapter;
+}
+
 .kicker::before {
-  content: "";
-  width: 2.5rem;
-  height: 1px;
-  background: currentColor;
+  content: counter(chapter, decimal-leading-zero) " —";
+  padding-left: 3.35rem;
+  background: linear-gradient(currentColor, currentColor) left center / 2.5rem 1px no-repeat;
 }
 
 .heading {
@@ -429,9 +445,61 @@ main,
   pointer-events: none;
 }
 
-.site-header a {
+.site-header a,
+.site-header button {
   pointer-events: auto;
   text-decoration: none;
+}
+
+.sound-toggle {
+  gap: 0.45rem;
+  background: none;
+  cursor: pointer;
+}
+
+.sound-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sound-icon path:first-child {
+  fill: currentColor;
+}
+
+.sound-waves {
+  animation: sound-waves 1.6s ease-in-out infinite;
+}
+
+@keyframes sound-waves {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.sound-toggle[aria-pressed="false"] {
+  opacity: 0.7;
+}
+
+@media (max-width: 599px) {
+  .sound-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-waves {
+    animation: none;
+  }
 }
 
 .monogram {
@@ -585,6 +653,25 @@ main,
   transform: scaleY(0);
 }
 
+/* Only the dots catch the pointer: the hidden labels must not cover the art and the guitar beside them. */
+.rail,
+.rail-track,
+.rail-knot {
+  pointer-events: none;
+}
+
+.rail-knot-dot {
+  position: relative;
+  pointer-events: auto;
+}
+
+/* A finger-sized target around the small dot. */
+.rail-knot-dot::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
+}
+
 .rail-knot {
   position: relative;
   display: flex;
@@ -649,6 +736,8 @@ main,
   background: rgb(11 13 26 / 0.72);
   color: var(--silk);
   font-size: var(--fs-small);
+  /* Read-only: taps go through to whatever is underneath, the guitar included. */
+  pointer-events: none;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -681,6 +770,25 @@ main,
   overflow: clip;
   padding-block: clamp(1.5rem, 4vw, 3rem);
   border-block: 1px solid var(--line);
+  touch-action: pan-y pinch-zoom;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: border-color 0.3s;
+}
+
+/* `is-playful` is added only while the grab handlers are attached, so a still band never shows a hand. */
+.marquee.is-held {
+  border-color: var(--accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marquee.is-playful {
+    cursor: grab;
+  }
+
+  .marquee.is-playful.is-held {
+    cursor: grabbing;
+  }
 }
 
 .marquee-track {
@@ -775,24 +883,26 @@ main,
   height: 100%;
 }
 
+/* Under the header on phones, where it cannot cover a call to action or the chapter badge;
+   bottom centre on wide screens. */
 .egg-tracker {
   position: fixed;
-  right: var(--gutter);
-  bottom: 1rem;
+  top: 5rem;
+  left: 50%;
   z-index: 75;
   display: grid;
-  justify-items: end;
+  justify-items: center;
   gap: 0.5rem;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--gutter));
   pointer-events: none;
+  transform: translateX(-50%);
 }
 
 @media (min-width: 900px) {
   .egg-tracker {
-    right: auto;
-    left: 50%;
+    top: auto;
     bottom: 1.5rem;
-    justify-items: center;
-    transform: translateX(-50%);
   }
 }
 

@@ -1,7 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 import { ThreadAnchor } from "../components/ThreadAnchor";
 import type { Content } from "../content/types";
 import { gsap, isFinePointer, useScene } from "../lib/motion";
+import { rateLimit } from "../lib/sound";
+import {
+  bumpLens,
+  playRowChord,
+  playRowNote,
+  pulseTitle,
+  spinEmblem,
+  stopPulse,
+} from "./projectPlay";
 import "./projects.css";
 
 /** One small emblem per discipline, shown in the lens that trails the pointer. */
@@ -30,11 +39,26 @@ const EMBLEMS = [
 
 export function Projects({ text }: { text: Content["projects"] }) {
   const lensRef = useRef<HTMLDivElement>(null);
+  const emblemRef = useRef<SVGSVGElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(0);
+  const activeRow = useRef(-1);
+  const noteGates = useRef<Array<() => boolean>>([]);
+
+  const enterRow = (index: number, event: ReactPointerEvent<HTMLLIElement>) => {
+    setHovered(index);
+    if (event.pointerType === "touch" || !isFinePointer()) return;
+    const gate = noteGates.current[index] ?? rateLimit(120);
+    noteGates.current[index] = gate;
+    if (gate()) playRowNote(index, event.clientX);
+    if (activeRow.current === index) return;
+    activeRow.current = index;
+    spinEmblem(emblemRef.current);
+  };
 
   useEffect(() => {
     const lens = lensRef.current;
+    const emblem = emblemRef.current;
     const list = listRef.current;
     if (!lens || !list || !isFinePointer()) return;
     const toX = gsap.quickTo(lens, "x", { duration: 0.5, ease: "power3" });
@@ -44,8 +68,12 @@ export function Projects({ text }: { text: Content["projects"] }) {
       toX(event.clientX - box.left);
       toY(event.clientY - box.top);
     };
-    const show = () => gsap.to(lens, { scale: 1, duration: 0.4, ease: "back.out(2)" });
-    const hide = () => gsap.to(lens, { scale: 0, duration: 0.3 });
+    const show = () =>
+      gsap.to(lens, { scale: 1, duration: 0.4, ease: "back.out(2)", overwrite: "auto" });
+    const hide = () => {
+      activeRow.current = -1;
+      gsap.to(lens, { scale: 0, duration: 0.3, overwrite: "auto" });
+    };
     list.addEventListener("pointermove", onMove);
     list.addEventListener("pointerenter", show);
     list.addEventListener("pointerleave", hide);
@@ -53,6 +81,26 @@ export function Projects({ text }: { text: Content["projects"] }) {
       list.removeEventListener("pointermove", onMove);
       list.removeEventListener("pointerenter", show);
       list.removeEventListener("pointerleave", hide);
+      gsap.killTweensOf(lens);
+      if (emblem) gsap.killTweensOf(emblem);
+    };
+  }, []);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const onClick = (event: MouseEvent) => {
+      const row = event.target instanceof Element ? event.target.closest(".project-row") : null;
+      if (!row) return;
+      const index = Array.from(list.querySelectorAll(".project-row")).indexOf(row);
+      playRowChord(index, event.clientX);
+      pulseTitle(row.querySelector<HTMLElement>(".project-title"));
+      bumpLens(lensRef.current);
+    };
+    list.addEventListener("click", onClick);
+    return () => {
+      list.removeEventListener("click", onClick);
+      for (const title of list.querySelectorAll(".project-title")) stopPulse(title);
     };
   }, []);
 
@@ -93,7 +141,11 @@ export function Projects({ text }: { text: Content["projects"] }) {
       <div ref={listRef} className="project-index">
         <ol className="project-list">
           {text.items.map((item, index) => (
-            <li key={item.title} className="project-row" onPointerEnter={() => setHovered(index)}>
+            <li
+              key={item.title}
+              className="project-row"
+              onPointerEnter={(event) => enterRow(index, event)}
+            >
               <ThreadAnchor place="thread-anchor--row" />
               <span className="project-number">{String(index + 1).padStart(2, "0")}</span>
               <h3 className="project-title">{item.title}</h3>
@@ -102,7 +154,7 @@ export function Projects({ text }: { text: Content["projects"] }) {
           ))}
         </ol>
         <div ref={lensRef} className="project-lens" aria-hidden="true">
-          <svg viewBox="0 0 120 120" aria-hidden="true">
+          <svg ref={emblemRef} viewBox="0 0 120 120" aria-hidden="true">
             {EMBLEMS[hovered % EMBLEMS.length]}
           </svg>
         </div>

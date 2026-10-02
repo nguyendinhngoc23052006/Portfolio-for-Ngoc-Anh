@@ -5,17 +5,18 @@ import { vi } from "../content/vi";
 import { createWordMatcher, discover, EGG_IDS, SECRET_WORD, useEggs } from "./eggs";
 
 describe("createWordMatcher", () => {
-  it("fires on the key that completes the word, case-insensitively", () => {
+  it("counts the letters of the word typed so far and completes case-insensitively", () => {
     const matches = createWordMatcher(SECRET_WORD);
     const results = [..."xxNgOcAnH"].map(matches);
-    expect(results.at(-1)).toBe(true);
-    expect(results.slice(0, -1).every((hit) => !hit)).toBe(true);
+    expect(results).toEqual([0, 0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(results.at(-1)).toBe(SECRET_WORD.length);
   });
 
-  it("ignores modifier keys mid-word and restarts cleanly after a typo", () => {
+  it("ignores non-letters and restarts cleanly after a typo", () => {
     const matches = createWordMatcher("abc");
-    expect(["a", "Shift", "b", "c"].map(matches).at(-1)).toBe(true);
-    expect(["a", "x", "b", "c"].map(matches).at(-1)).toBe(false);
+    expect(["a", "Shift", "b", "c"].map(matches)).toEqual([1, null, 2, 3]);
+    expect(["a", "x", "b", "c"].map(matches)).toEqual([1, 0, 0, 0]);
+    expect(["a", "a", "b", "c"].map(matches)).toEqual([1, 1, 2, 3]);
   });
 });
 

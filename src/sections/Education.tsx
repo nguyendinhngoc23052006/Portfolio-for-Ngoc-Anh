@@ -1,7 +1,11 @@
+import { useEffect } from "react";
 import { ThreadAnchor } from "../components/ThreadAnchor";
 import { profile } from "../content/profile";
 import type { Content } from "../content/types";
 import { gsap, ScrollTrigger, useScene } from "../lib/motion";
+import { curvePoint, PLOT } from "./educationCurve";
+import { attachGlobeSpin, SPIN_HEADROOM } from "./educationGlobe";
+import { attachPlotSong } from "./educationPlot";
 import "./education.css";
 
 const MERIDIANS = [0, 1, 2, 3, 4, 5];
@@ -10,8 +14,9 @@ const PARALLELS = [-60, -30, 0, 30, 60];
 /** Foreign trade: a turning globe with a route and a ship crossing it. */
 function Globe() {
   return (
-    <svg viewBox="0 0 240 240" aria-hidden="true">
+    <svg className="eg-globe" viewBox="0 0 240 240" aria-hidden="true">
       <circle className="eg-sphere" cx="120" cy="120" r="96" />
+      <circle className="eg-wake" cx="120" cy="120" r="96" opacity="0" />
       {PARALLELS.map((offset) => (
         <ellipse
           key={`par${offset}`}
@@ -43,12 +48,12 @@ function Globe() {
 /** Specialised mathematics: a function plotting itself on a grid. */
 function Plot() {
   const curve = Array.from({ length: 61 }, (_, i) => {
-    const x = i / 60;
-    const y = Math.sin(x * Math.PI * 3) * (1 - x) * 0.8 + x * 0.6;
-    return `${i === 0 ? "M" : "L"}${(24 + x * 192).toFixed(1)} ${(150 - y * 90).toFixed(1)}`;
+    const point = curvePoint(i / 60);
+    return `${i === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`;
   }).join(" ");
+  const start = curvePoint(0);
   return (
-    <svg viewBox="0 0 240 240" aria-hidden="true">
+    <svg className="eg-plot" viewBox="0 0 240 240" aria-hidden="true">
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <line
           key={`v${i}`}
@@ -80,6 +85,9 @@ function Plot() {
       <text className="eg-symbol" x="58" y="64">
         Σ
       </text>
+      <line className="eg-guide" x1={start.x} y1={start.y} x2={start.x} y2={PLOT.axis} />
+      <circle className="eg-tracer-halo" cx={start.x} cy={start.y} r="11" />
+      <circle className="eg-tracer" cx={start.x} cy={start.y} r="4.5" />
     </svg>
   );
 }
@@ -130,27 +138,31 @@ export function Education({ text, present }: Props) {
     }
 
     // The globe turns: each meridian squeezes and widens out of phase.
-    gsap.utils.toArray<SVGEllipseElement>(".eg-meridian", root).forEach((meridian, i) => {
-      gsap
-        .fromTo(
-          meridian,
-          { attr: { rx: 96 } },
-          { attr: { rx: 0 }, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1 },
-        )
-        .totalTime(i);
-    });
-    gsap.to(".eg-ship", {
-      motionPath: {
-        path: "#trade-route",
-        align: "#trade-route",
-        alignOrigin: [0.5, 0.5],
-        autoRotate: true,
-      },
-      duration: 4,
-      ease: "power1.inOut",
-      yoyo: true,
-      repeat: -1,
-    });
+    const meridians = gsap.utils
+      .toArray<SVGEllipseElement>(".eg-meridian", root)
+      .map((meridian, i) =>
+        gsap
+          .fromTo(
+            meridian,
+            { attr: { rx: 96 } },
+            { attr: { rx: 0 }, duration: 3, ease: "sine.inOut", yoyo: true, repeat: -1 },
+          )
+          .totalTime(SPIN_HEADROOM + i),
+      );
+    const ship = gsap
+      .to(".eg-ship", {
+        motionPath: {
+          path: "#trade-route",
+          align: "#trade-route",
+          alignOrigin: [0.5, 0.5],
+          autoRotate: true,
+        },
+        duration: 4,
+        ease: "power1.inOut",
+        yoyo: true,
+        repeat: -1,
+      })
+      .totalTime(SPIN_HEADROOM);
     gsap.to(".eg-symbol", {
       y: -8,
       duration: 2.2,
@@ -167,7 +179,19 @@ export function Education({ text, present }: Props) {
       scrub: true,
       animation: gsap.from(".edu-thread path", { drawSVG: "0%", ease: "none" }),
     });
+
+    const globe = root.querySelector<SVGSVGElement>(".eg-globe");
+    return globe ? attachGlobeSpin(globe, { meridians, ship }) : undefined;
   });
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const stops = Array.from(root.querySelectorAll<SVGSVGElement>(".eg-plot"), attachPlotSong);
+    return () => {
+      for (const stop of stops) stop();
+    };
+  }, [ref]);
 
   return (
     <section

@@ -1,0 +1,28 @@
+.hobby {
+  overflow: clip;
+}
+
+/* Lamplight: a warm pool where the guitar sits. */
+.hobby::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 55% 45% at 70% 70%, rgb(232 176 79 / 0.1), transparent 70%),
+    radial-gradient(ellipse 35% 35% at 15% 20%, rgb(224 83 58 / 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+.hobby-inner {
+  position: relative;
+  display: grid;
+  gap: clamp(2.5rem, 6vh, 4rem);
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.hobby-intro {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 48rem;
+}
