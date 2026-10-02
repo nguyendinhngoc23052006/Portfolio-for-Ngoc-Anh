@@ -27,6 +27,7 @@
   padding: clamp(1.5rem, 3.5vw, 2.75rem) 0.5rem;
   border-bottom: 1px solid var(--line);
   isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .project-row::before {
@@ -53,6 +54,7 @@
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.045em;
+  transform-origin: left center;
   transition:
     transform 0.6s var(--ease-out),
     color 0.4s;
@@ -77,6 +79,10 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .project-row {
+    cursor: pointer;
+  }
+
   .project-row:hover::before {
     transform: scaleY(1);
   }

@@ -1,10 +1,11 @@
+import { useEffect } from "react";
 import { Rich } from "../components/Text";
 import { ThreadAnchor } from "../components/ThreadAnchor";
 import { formatPeriod, profile } from "../content/profile";
 import type { Content } from "../content/types";
 import { gsap, ScrollTrigger, useScene } from "../lib/motion";
 import { setThreadTrack } from "../lib/thread";
-import { animateMotif, JourneyMotif } from "./JourneyMotifs";
+import { animateMotif, attachMotifPlay, JourneyMotif } from "./JourneyMotifs";
 import "./journey.css";
 
 interface Props {
@@ -108,6 +109,19 @@ export function Journey({ text, present }: Props) {
       setThreadTrack(null);
     };
   });
+
+  // Plain effect, not a scene: the toys must also work in the stacked layout and under reduced motion.
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const cleanups = profile.journey.flatMap((fact) => {
+      const motif = root.querySelector(`.station--${fact.id} .station-motif`);
+      return motif ? [attachMotifPlay(fact.id, motif)] : [];
+    });
+    return () => {
+      for (const cleanup of cleanups) cleanup();
+    };
+  }, [ref]);
 
   return (
     <section

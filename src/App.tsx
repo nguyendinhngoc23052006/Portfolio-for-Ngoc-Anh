@@ -18,6 +18,7 @@ import { Contact } from "./sections/Contact";
 import { Direction } from "./sections/Direction";
 import { Education } from "./sections/Education";
 import { Hero } from "./sections/Hero";
+import { Hobby } from "./sections/Hobby";
 import { Journey } from "./sections/Journey";
 import { Principles } from "./sections/Principles";
 import { Projects } from "./sections/Projects";
@@ -58,6 +59,7 @@ export function App({ locale, content }: Props) {
         <Education text={content.education} present={content.present} />
         <Direction text={content.direction} />
         <Skills text={content.skills} />
+        <Hobby text={content.hobby} />
         <Contact text={content.contact} />
       </main>
       <Footer name={profile.name} locale={locale} nav={content.nav} eggHint={content.eggs.hint} />

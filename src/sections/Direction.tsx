@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { Rich, Words } from "../components/Text";
 import { ThreadAnchor } from "../components/ThreadAnchor";
 import type { Content } from "../content/types";
-import { discover } from "../lib/eggs";
 import { gsap, ScrollTrigger, useScene } from "../lib/motion";
+import { attachNetworkPlay } from "./directionPlay";
 import "./direction.css";
 
 type Point = readonly [number, number];
@@ -195,53 +195,12 @@ export function Direction({ text }: { text: Content["direction"] }) {
         pulse.play();
       },
     });
-
-    // Easter egg: click a hub to rush an order through to the result.
-    const svg = network.querySelector("svg");
-    const result = network.querySelector(".dn-result");
-    const hubs = gsap.utils.toArray<SVGGElement>(".dn-hub", root);
-    const dispatch = (event: Event) => {
-      const routes = (event.currentTarget as SVGGElement).dataset.routes?.split(" ") ?? [];
-      for (const [i, routeIndex] of routes.entries()) {
-        const parcel = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        parcel.setAttribute("r", "7");
-        parcel.setAttribute("class", "dn-parcel");
-        svg?.insertBefore(parcel, result);
-        gsap.to(parcel, {
-          motionPath: {
-            path: `#route-${routeIndex}`,
-            align: `#route-${routeIndex}`,
-            alignOrigin: [0.5, 0.5],
-          },
-          duration: 1.3,
-          delay: i * 0.12,
-          ease: "power2.in",
-          onComplete: () => {
-            parcel.remove();
-            if (!result) return;
-            gsap.fromTo(
-              result,
-              { scale: 1.35 },
-              { scale: 1, transformOrigin: "50% 50%", duration: 0.6, ease: "elastic.out(1, 0.4)" },
-            );
-          },
-        });
-      }
-    };
-    for (const hub of hubs) hub.addEventListener("pointerdown", dispatch);
-    return () => {
-      for (const hub of hubs) hub.removeEventListener("pointerdown", dispatch);
-    };
   });
 
-  // Counted with or without motion; the scene setup above only animates.
+  // Works with or without motion: reduced motion keeps the sound and drops the animation.
   useEffect(() => {
-    const hubs = Array.from(ref.current?.querySelectorAll(".dn-hub") ?? []);
-    const notice = () => discover("dispatch");
-    for (const hub of hubs) hub.addEventListener("pointerdown", notice);
-    return () => {
-      for (const hub of hubs) hub.removeEventListener("pointerdown", notice);
-    };
+    const network = ref.current?.querySelector<HTMLElement>(".direction-network");
+    return network ? attachNetworkPlay(network) : undefined;
   }, [ref]);
 
   return (

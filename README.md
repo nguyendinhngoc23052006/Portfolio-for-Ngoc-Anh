@@ -4,8 +4,9 @@ A bilingual scrollytelling portfolio: Vietnamese at `/`, English at `/en`.
 One silk thread runs through the whole page. It is pulled from the hero's silk,
 winds into a cocoon, becomes the route of her journey, stitches past her
 principles and projects, crosses a globe and a function plot, branches into a
-supply-chain network and ties off as the contact knot. Five easter eggs hide
-along the way; the footer hints at three.
+supply-chain network, runs through the strings of her guitar and ties off as
+the contact knot. Every interaction makes a sound, and easter eggs hide along
+the way; the footer hints at a few.
 
 Built with Vite + React + TypeScript, GSAP (ScrollTrigger, DrawSVG,
 MotionPath) and Lenis. No database.
@@ -33,6 +34,14 @@ MotionPath) and Lenis. No database.
   those setups, so if a script fails the text is still on the page.
 - **Easter eggs** are listed once in `src/lib/eggs.ts`; the counter's total is
   that list's length.
+- **Sound** is synthesised in `src/lib/sound.ts` (no audio files). It stays
+  silent until the visitor's first click or key press, and the header's switch
+  turns all of it off, the guitar included.
+- **The guitar** (`src/guitar/`) is a physical model: six waveguide strings on
+  an AudioWorklet, tuned to 12-tone equal temperament, with a canvas neck drawn
+  to scale. `src/guitar/physics.test.ts` holds it to pitch, decay and tone.
+- **Chapter numbers** ("03 —") are counted by CSS from the page order; the
+  kicker strings hold only the label.
 
 ## Checks
 

@@ -109,6 +109,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Sideways swipes play the harp and the guitar; they must never turn into "go back". */
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -233,11 +235,19 @@ html.lenis body {
   color: var(--muted);
 }
 
+/* Chapter numbers are counted from the sections' order on the page, never written by hand. */
+main {
+  counter-reset: chapter;
+}
+
+main section[id] {
+  counter-increment: chapter;
+}
+
 .kicker::before {
-  content: "";
-  width: 2.5rem;
-  height: 1px;
-  background: currentColor;
+  content: counter(chapter, decimal-leading-zero) " —";
+  padding-left: 3.35rem;
+  background: linear-gradient(currentColor, currentColor) left center / 2.5rem 1px no-repeat;
 }
 
 .heading {
@@ -637,6 +647,16 @@ main,
   transform: scaleY(0);
 }
 
+/* Only the dots catch the pointer: the hidden labels must not cover the art and the guitar beside them. */
+.rail-track,
+.rail-knot {
+  pointer-events: none;
+}
+
+.rail-knot-dot {
+  pointer-events: auto;
+}
+
 .rail-knot {
   position: relative;
   display: flex;
@@ -701,6 +721,8 @@ main,
   background: rgb(11 13 26 / 0.72);
   color: var(--silk);
   font-size: var(--fs-small);
+  /* Read-only: taps go through to whatever is underneath, the guitar included. */
+  pointer-events: none;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -733,6 +755,25 @@ main,
   overflow: clip;
   padding-block: clamp(1.5rem, 4vw, 3rem);
   border-block: 1px solid var(--line);
+  touch-action: pan-y pinch-zoom;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: border-color 0.3s;
+}
+
+/* `is-playful` is added only while the grab handlers are attached, so a still band never shows a hand. */
+.marquee.is-held {
+  border-color: var(--accent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marquee.is-playful {
+    cursor: grab;
+  }
+
+  .marquee.is-playful.is-held {
+    cursor: grabbing;
+  }
 }
 
 .marquee-track {
@@ -827,24 +868,24 @@ main,
   height: 100%;
 }
 
+/* Under the header on phones, where it cannot cover a call to action or the chapter badge;
+   bottom centre on wide screens. */
 .egg-tracker {
   position: fixed;
-  right: var(--gutter);
-  bottom: 1rem;
+  top: 5rem;
+  left: 50%;
   z-index: 75;
   display: grid;
-  justify-items: end;
+  justify-items: center;
   gap: 0.5rem;
   pointer-events: none;
+  transform: translateX(-50%);
 }
 
 @media (min-width: 900px) {
   .egg-tracker {
-    right: auto;
-    left: 50%;
+    top: auto;
     bottom: 1.5rem;
-    justify-items: center;
-    transform: translateX(-50%);
   }
 }
 

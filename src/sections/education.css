@@ -98,6 +98,51 @@
   fill: rgb(154 90 15 / 0.06);
   stroke: var(--fg);
   stroke-width: 1.5;
+  transition:
+    fill 0.3s ease,
+    stroke 0.3s ease;
+}
+
+.eg-globe,
+.eg-plot {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Only once the drag is wired up (never under reduced motion), and only the exact element:
+   a sideways drag spins the globe, a vertical one still scrolls the page. */
+.eg-globe.is-spinnable {
+  touch-action: pan-y pinch-zoom;
+}
+
+.eg-globe.is-grabbed .eg-sphere {
+  fill: rgb(154 90 15 / 0.14);
+  stroke: var(--accent);
+}
+
+.eg-wake {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.eg-plot {
+  touch-action: pan-y pinch-zoom;
+}
+
+@media (pointer: fine) {
+  .eg-globe.is-spinnable {
+    cursor: grab;
+  }
+
+  .eg-globe.is-grabbed {
+    cursor: grabbing;
+  }
+
+  .eg-plot {
+    cursor: crosshair;
+  }
 }
 
 .eg-line {
@@ -145,4 +190,52 @@
   font-family: var(--font-serif);
   font-size: 30px;
   font-style: italic;
+}
+
+.eg-tracer,
+.eg-tracer-halo,
+.eg-guide {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.eg-tracer {
+  fill: var(--accent-2);
+}
+
+.eg-tracer-halo {
+  fill: var(--accent-2);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.eg-guide {
+  stroke: var(--accent-2);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.eg-plot.is-tracing .eg-tracer {
+  opacity: 1;
+}
+
+.eg-plot.is-tracing .eg-tracer-halo {
+  opacity: 0.3;
+}
+
+.eg-plot.is-tracing .eg-guide {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .eg-plot.is-tracing .eg-tracer-halo {
+    animation: eg-breathe 1.1s ease-in-out infinite;
+  }
+}
+
+@keyframes eg-breathe {
+  50% {
+    transform: scale(1.5);
+  }
 }

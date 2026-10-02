@@ -4,6 +4,7 @@ import { App } from "./App";
 import { getContent } from "./content/locale";
 import { profile, toTelHref } from "./content/profile";
 import type { Locale } from "./content/types";
+import { CHORDS } from "./guitar/physics";
 
 function render(locale: Locale) {
   return renderToString(<App locale={locale} content={getContent(locale)} />);
@@ -42,6 +43,20 @@ describe.each(["vi", "en"] as const)("App (%s)", (locale) => {
     expect(text).toContain(content.contact.heading);
     expect(text).toContain(content.direction.focus);
     expect(text).not.toContain("*");
+  });
+
+  it("leaves chapter numbers to the stylesheet, which counts them in page order", () => {
+    const kickers = [...html.matchAll(/class="kicker[^"]*"[^>]*>([^<]*)</g)].map(
+      (match) => match[1],
+    );
+    expect(kickers).toHaveLength(Object.keys(content.chapters).length);
+    for (const kicker of kickers) expect(kicker).not.toMatch(/\d/);
+  });
+
+  it("gives her guitar a button for every chord and string", () => {
+    expect(html).toContain('class="guitar-canvas"');
+    expect(html.match(/class="guitar-chord-button"/g)).toHaveLength(CHORDS.length);
+    expect(html.match(/class="guitar-string-button"/g)).toHaveLength(6);
   });
 
   it("links to the other language", () => {

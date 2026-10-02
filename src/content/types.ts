@@ -12,9 +12,10 @@ export type ChapterId =
   | "education"
   | "direction"
   | "skills"
+  | "hobby"
   | "contact";
 
-/** Section label shown as "03 — Hành trình". */
+/** Section label; the stylesheet numbers it from the section's place on the page ("03 — Hành trình"). */
 type Kicker = string;
 
 /** Wrap a phrase in *asterisks* to emphasise it; see `splitEmphasis`. */
@@ -83,6 +84,32 @@ export interface Content {
     toolsHeading: string;
     languageHeading: string;
     language: string;
+  };
+  hobby: {
+    kicker: Kicker;
+    heading: string;
+    lead: RichText;
+    guitar: {
+      /** The canvas's accessible name: what it is and how to play it. */
+      stageLabel: string;
+      start: string;
+      soundOff: string;
+      chords: string;
+      strings: string;
+      string: string;
+      strumDown: string;
+      strumUp: string;
+      capo: string;
+      capoDown: string;
+      capoUp: string;
+      fullscreen: string;
+      exitFullscreen: string;
+      /** How to play with a mouse, shown on devices with one. */
+      pointerHelp: string;
+      /** How to play by touch, shown on touch screens. */
+      touchHelp: string;
+      keys: { keys: string; action: string }[];
+    };
   };
   contact: {
     kicker: Kicker;

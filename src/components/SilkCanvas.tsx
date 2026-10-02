@@ -1,13 +1,37 @@
 import { useEffect, useRef } from "react";
-import { discover } from "../lib/eggs";
+import { discover, silkBurst } from "../lib/eggs";
 import { observeVisibility, prefersReducedMotion, ScrollTrigger } from "../lib/motion";
+import { buzz, panFor, pluck, rateLimit } from "../lib/sound";
+import {
+  createRings,
+  createStrum,
+  createSwipeTracker,
+  nearestStrand,
+  noteOfString,
+  ringGlow,
+  ringOmega,
+  ringShake,
+  type SilkLayout,
+  SWEEP_STAGGER,
+  strandBaseline,
+  strandChop,
+  strandSwing,
+  strandWave,
+  stringOfStrand,
+} from "./silkHarp";
 
 const GOLD = [232, 176, 79];
 const VERMILION = [224, 83, 58];
 const IVORY = [246, 226, 190];
+const STRUM_EGG_STRINGS = 8;
 
 function isOnControl(event: PointerEvent): boolean {
   return Boolean((event.target as Element | null)?.closest("a, button"));
+}
+
+/** Paragraphs stay selectable: a drag that starts on them selects text instead of strumming. */
+function isOnText(event: PointerEvent): boolean {
+  return Boolean((event.target as Element | null)?.closest("p"));
 }
 
 function strandColor(t: number, alpha: number): string {
@@ -20,7 +44,8 @@ function strandColor(t: number, alpha: number): string {
 
 /**
  * Flowing silk: dozens of strands that drift, bend toward the pointer and fan
- * out on scroll. Easter egg: click or drag to pluck them like strings.
+ * out on scroll. Easter egg: the strands are a đàn tranh. Click to pluck the
+ * string under the pointer; drag across them to strum.
  */
 export function SilkCanvas() {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -32,88 +57,152 @@ export function SilkCanvas() {
     if (!canvas || !context || !section) return;
 
     const isStill = prefersReducedMotion();
-    let width = 0;
-    let height = 0;
-    let strands = 0;
+    const layout: SilkLayout = { width: 0, height: 0, strands: 0, scroll: 0 };
     let step = 0;
     let frame = 0;
     let isVisible = true;
-    let scrollProgress = 0;
     const start = performance.now();
+    const now = () => (performance.now() - start) / 1000;
     const pointer = { x: 0, y: 0, targetX: 0, targetY: 0, pull: 0, targetPull: 0 };
-    let plucks: { x: number; y: number; time: number }[] = [];
-    let lastPluck = 0;
+    let ripples: { x: number; y: number; time: number }[] = [];
+    let lastRipple = 0;
+    const rings = createRings();
+    const strum = createStrum();
+    const swipe = createSwipeTracker();
+    const canStrum = rateLimit(35);
+    let hasBurst = false;
+    let isSelectingText = false;
 
     const resize = () => {
       const ratio = Math.min(window.devicePixelRatio, 2);
-      width = canvas.clientWidth;
-      height = canvas.clientHeight;
-      canvas.width = width * ratio;
-      canvas.height = height * ratio;
+      layout.width = canvas.clientWidth;
+      layout.height = canvas.clientHeight;
+      canvas.width = layout.width * ratio;
+      canvas.height = layout.height * ratio;
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      const isNarrow = width < 700;
-      strands = isNarrow ? 38 : 66;
+      const isNarrow = layout.width < 700;
+      layout.strands = isNarrow ? 38 : 66;
       step = isNarrow ? 22 : 16;
       if (isStill) draw(0);
     };
 
     const draw = (time: number) => {
+      const { width, height, strands, scroll } = layout;
       context.clearRect(0, 0, width, height);
       context.globalCompositeOperation = "lighter";
-      context.lineWidth = 1;
       pointer.x += (pointer.targetX - pointer.x) * 0.08;
       pointer.y += (pointer.targetY - pointer.y) * 0.08;
       pointer.pull += (pointer.targetPull - pointer.pull) * 0.05;
-      plucks = plucks.filter((pluck) => time - pluck.time < 2.8);
-      const spread = 1 + scrollProgress * 1.4;
-      const fade = 1 - scrollProgress * 0.75;
+      ripples = ripples.filter((ripple) => time - ripple.time < 2.8);
+      const fade = 1 - scroll * 0.75;
+      const chop = strandChop(height);
 
       for (let s = 0; s < strands; s++) {
         const t = s / (strands - 1);
         const body = Math.sin(t * Math.PI);
-        const baseY = height * (0.5 + (t - 0.5) * 0.42 * spread);
-        const ampA = height * 0.085 * (0.55 + 0.45 * body) * (1 + scrollProgress);
-        const ampB = height * 0.04;
-        context.strokeStyle = strandColor(t, (0.05 + 0.26 * body) * fade);
+        const baseline = strandBaseline(t, height, scroll);
+        const swing = strandSwing(t, height, scroll);
+        const string = stringOfStrand(s, strands);
+        const age = rings.ageOf(string, time);
+        const isRinging = age >= 0;
+        const power = isRinging ? rings.powerOf(string) : 0;
+        const glow = isRinging ? ringGlow(age) * power : 0;
+        const shiver = isRinging ? height * 0.02 * ringShake(age) * power : 0;
+        const omega = ringOmega(string);
+        const hue = t + (0.5 - t) * glow * 0.5;
+        context.lineWidth = 1 + glow * 1.4;
+        context.strokeStyle = strandColor(
+          hue,
+          Math.min(1, (0.05 + 0.26 * body) * fade + glow * 0.6),
+        );
         context.beginPath();
         for (let x = -40; x <= width + 40; x += step) {
           const nx = x / width;
-          let y =
-            baseY +
-            Math.sin(nx * Math.PI * 2.4 + time * 0.32 + t * 1.8) * ampA +
-            Math.sin(nx * Math.PI * 5.2 - time * 0.46 + t * 3.4) * ampB;
+          let y = strandWave(t, nx, time, baseline, swing, chop);
           if (pointer.pull > 0.001) {
             const dx = x - pointer.x;
             const influence = Math.exp(-(dx * dx) / (2 * 170 * 170)) * pointer.pull;
             y += (pointer.y - y) * influence * 0.28;
           }
-          for (const pluck of plucks) {
-            const age = time - pluck.time;
-            const dx = x - pluck.x;
+          for (const ripple of ripples) {
+            const rippleAge = time - ripple.time;
+            const dx = x - ripple.x;
             const reach = Math.exp(-(dx * dx) / (2 * 260 * 260));
-            const nearness = Math.exp((-Math.abs(baseY - pluck.y) / height) * 3);
+            const nearness = Math.exp((-Math.abs(baseline - ripple.y) / height) * 3);
             y +=
               height *
               0.1 *
               reach *
               nearness *
-              Math.exp(-age * 1.8) *
-              Math.sin(age * 16 - Math.abs(dx) * 0.03 + t * 2);
+              Math.exp(-rippleAge * 1.8) *
+              Math.sin(rippleAge * 16 - Math.abs(dx) * 0.03 + t * 2);
           }
+          if (shiver > 0.2) y += shiver * Math.sin(nx * Math.PI) * Math.sin(age * omega + s * 0.35);
           if (x === -40) context.moveTo(x, y);
           else context.lineTo(x, y);
         }
         context.stroke();
+        if (glow > 0.02) {
+          context.lineWidth = 4 + glow * 6;
+          context.strokeStyle = strandColor(hue, 0.12 * glow);
+          context.stroke();
+        }
       }
       context.globalCompositeOperation = "source-over";
     };
 
     const loop = () => {
       frame = requestAnimationFrame(loop);
-      if (isVisible) draw((performance.now() - start) / 1000);
+      if (isVisible) draw(now());
+    };
+
+    const stringAt = (event: PointerEvent): number => {
+      const box = canvas.getBoundingClientRect();
+      const strand = nearestStrand(
+        layout,
+        event.clientX - box.left,
+        event.clientY - box.top,
+        isStill ? 0 : now(),
+      );
+      return stringOfStrand(strand, layout.strands);
+    };
+
+    const sound = (string: number, event: PointerEvent, gain: number, order = 0) => {
+      const delay = order * SWEEP_STAGGER;
+      pluck(noteOfString(string), {
+        gain,
+        pan: panFor(event.clientX),
+        bend: swipe.isSweepingVertically(event.timeStamp) ? 0.35 : 0,
+        delay,
+      });
+      if (!isStill) rings.strike(string, now() + delay);
+    };
+
+    const strike = (event: PointerEvent, startsStrum = true) => {
+      const string = stringAt(event);
+      if (startsStrum) {
+        strum.begin(string);
+        hasBurst = false;
+      }
+      sound(string, event, 0.85);
+      buzz(6);
+      discover("pluck");
+    };
+
+    const startRipple = (event: PointerEvent) => {
+      const at = now();
+      if (at - lastRipple < 0.09) return;
+      lastRipple = at;
+      const box = canvas.getBoundingClientRect();
+      ripples = [
+        ...ripples.slice(-7),
+        { x: event.clientX - box.left, y: event.clientY - box.top, time: at },
+      ];
     };
 
     const onPointerMove = (event: PointerEvent) => {
+      swipe.move(event.clientX, event.clientY, event.timeStamp);
+      if (isStill) return;
       const box = canvas.getBoundingClientRect();
       pointer.targetX = event.clientX - box.left;
       pointer.targetY = event.clientY - box.top;
@@ -122,62 +211,83 @@ export function SilkCanvas() {
     const onPointerLeave = () => {
       pointer.targetPull = 0;
     };
-    const pluck = (event: PointerEvent) => {
+    const onPointerDown = (event: PointerEvent) => {
       if (isOnControl(event)) return;
-      const now = (performance.now() - start) / 1000;
-      if (now - lastPluck < 0.09) return;
-      lastPluck = now;
-      const box = canvas.getBoundingClientRect();
-      plucks = [
-        ...plucks.slice(-7),
-        { x: event.clientX - box.left, y: event.clientY - box.top, time: now },
-      ];
-      discover("pluck");
+      if (!isStill) startRipple(event);
+      if (event.button !== 0) return;
+      isSelectingText = isOnText(event);
+      strike(event, !isSelectingText);
+    };
+    const onSelectStart = (event: Event) => {
+      if (strum.isActive) event.preventDefault();
+    };
+    const endStrum = () => {
+      strum.reset();
+      isSelectingText = false;
     };
     const onPointerDrag = (event: PointerEvent) => {
-      if (event.buttons === 1) pluck(event);
+      if (event.buttons !== 1) {
+        endStrum();
+        return;
+      }
+      if (isOnControl(event)) return;
+      if (!isStill) startRipple(event);
+      if (isSelectingText) return;
+      if (!strum.isActive) {
+        strike(event);
+        return;
+      }
+      const string = stringAt(event);
+      if (!strum.isNewString(string) || !canStrum()) return;
+      strum.cross(string, (crossed, order) => sound(crossed, event, 0.6, order));
+      buzz(4);
+      if (strum.distinctStrings >= STRUM_EGG_STRINGS && !hasBurst) {
+        hasBurst = true;
+        discover("strum");
+        silkBurst(event.clientX, event.clientY, 0.8);
+      }
     };
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(canvas);
     resize();
-    if (isStill) {
-      const notice = (event: PointerEvent) => {
-        if (!isOnControl(event)) discover("pluck");
-      };
-      section.addEventListener("pointerdown", notice);
-      return () => {
-        resizeObserver.disconnect();
-        section.removeEventListener("pointerdown", notice);
-      };
-    }
 
-    const stopObserving = observeVisibility(canvas, (visible) => {
-      isVisible = visible;
-    });
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: "top top",
-      end: "bottom top",
-      onUpdate: (self) => {
-        scrollProgress = self.progress;
-      },
-    });
+    let stopObserving = () => {};
+    let trigger: ScrollTrigger | undefined;
+    if (!isStill) {
+      stopObserving = observeVisibility(canvas, (visible) => {
+        isVisible = visible;
+      });
+      trigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom top",
+        onUpdate: (self) => {
+          layout.scroll = self.progress;
+        },
+      });
+      section.addEventListener("pointerleave", onPointerLeave);
+      frame = requestAnimationFrame(loop);
+    }
     section.addEventListener("pointermove", onPointerMove);
-    section.addEventListener("pointerleave", onPointerLeave);
-    section.addEventListener("pointerdown", pluck);
+    section.addEventListener("pointerdown", onPointerDown);
     section.addEventListener("pointermove", onPointerDrag);
-    frame = requestAnimationFrame(loop);
+    section.addEventListener("selectstart", onSelectStart);
+    window.addEventListener("pointerup", endStrum);
+    window.addEventListener("pointercancel", endStrum);
 
     return () => {
       cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       stopObserving();
-      trigger.kill();
-      section.removeEventListener("pointermove", onPointerMove);
+      trigger?.kill();
       section.removeEventListener("pointerleave", onPointerLeave);
-      section.removeEventListener("pointerdown", pluck);
+      section.removeEventListener("pointermove", onPointerMove);
+      section.removeEventListener("pointerdown", onPointerDown);
       section.removeEventListener("pointermove", onPointerDrag);
+      section.removeEventListener("selectstart", onSelectStart);
+      window.removeEventListener("pointerup", endStrum);
+      window.removeEventListener("pointercancel", endStrum);
     };
   }, []);
 

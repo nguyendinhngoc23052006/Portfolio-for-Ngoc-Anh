@@ -108,16 +108,27 @@
   fill: currentColor;
   opacity: 0.85;
 }
-.pg-cell:nth-child(3n) {
+.pg-cell--gold {
   fill: var(--gold);
 }
 .pg-link {
   stroke: currentColor;
   stroke-width: 1;
   opacity: 0.45;
+  transition:
+    opacity 0.25s,
+    stroke-width 0.25s;
+}
+.pg-link.is-pulled {
+  stroke-width: 2;
+  opacity: 0.95;
 }
 .pg-node {
   fill: currentColor;
+  transition: fill 0.25s;
+}
+.pg-node.is-held {
+  fill: var(--gold);
 }
 .pg-core {
   fill: var(--gold);
@@ -129,6 +140,15 @@
 .pg-bar {
   fill: currentColor;
   opacity: 0.8;
+  transition: opacity 0.25s;
+}
+.pg-bar.is-lit {
+  opacity: 1;
+}
+.pg-axis,
+.pg-trend,
+.pg-lens {
+  pointer-events: none;
 }
 .pg-trend {
   fill: none;
@@ -168,6 +188,14 @@
 }
 .pg-grip {
   fill: currentColor;
+  /* An invisible fat stroke widens the target; the dot itself stays small. */
+  stroke: transparent;
+  stroke-width: 22px;
+  pointer-events: all;
+  transition: r 0.2s var(--ease-out);
+}
+.pg-grip.is-held {
+  r: 8px;
 }
 
 .principle-glyph {
@@ -176,6 +204,8 @@
   background: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .principle-glyph svg {
@@ -184,4 +214,18 @@
 
 .principle-glyph:hover svg {
   transform: scale(1.04);
+}
+
+/* Parts a pointer can pick up. `is-playful` is added only when the fidgets are attached. */
+@media (pointer: fine) {
+  .principle-glyph.is-playful .pg-cell,
+  .principle-glyph.is-playful .pg-node,
+  .principle-glyph.is-playful .pg-grip {
+    cursor: grab;
+  }
+
+  .principle-glyph.is-dragging,
+  .principle-glyph.is-dragging * {
+    cursor: grabbing;
+  }
 }

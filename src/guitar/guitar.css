@@ -1,0 +1,324 @@
+.guitar {
+  display: grid;
+  gap: clamp(1.25rem, 3vh, 2rem);
+}
+
+/* Wide by default; a tall stage on portrait phones turns the guitar upright. */
+.guitar-stage {
+  position: relative;
+  aspect-ratio: 3.3 / 1;
+}
+
+@media (orientation: portrait) and (max-width: 760px) {
+  .guitar-stage {
+    width: min(100%, calc(80svh * 0.56));
+    aspect-ratio: 0.56;
+    margin-inline: auto;
+  }
+}
+
+.guitar-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  outline: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Upright, a strum is a sideways swipe: let vertical swipes keep scrolling the page. */
+.guitar[data-layout="vertical"] .guitar-canvas {
+  touch-action: pan-y;
+}
+
+/* Quiet but present: the keys play only while the strings have focus. */
+.guitar-canvas:focus-visible {
+  outline: 1px solid rgb(232 176 79 / 0.55);
+  outline-offset: 4px;
+}
+
+/* The story thread arrives at the nut and leaves from the bridge: the strings carry it between. */
+.thread-anchor--nut {
+  left: var(--nut);
+  top: 50%;
+}
+
+.thread-anchor--bridge {
+  left: var(--bridge);
+  top: 50%;
+}
+
+.guitar[data-layout="vertical"] .thread-anchor--nut {
+  left: 50%;
+  top: var(--nut);
+}
+
+.guitar[data-layout="vertical"] .thread-anchor--bridge {
+  left: 50%;
+  top: var(--bridge);
+}
+
+.guitar-start {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0 1.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font: 600 var(--fs-body) / 1 var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 0 rgb(232 176 79 / 0.6);
+  animation: guitar-call 2.4s ease-out infinite;
+  transition:
+    opacity 0.4s,
+    visibility 0s;
+}
+
+.guitar-start[data-state="running"] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.4s,
+    visibility 0s 0.4s;
+}
+
+.guitar-start:focus-visible {
+  outline: 2px solid var(--silk);
+  outline-offset: 4px;
+}
+
+@keyframes guitar-call {
+  70%,
+  100% {
+    box-shadow: 0 0 0 1.25rem rgb(232 176 79 / 0);
+  }
+}
+
+.guitar-controls {
+  display: grid;
+  gap: 1rem;
+}
+
+.guitar fieldset {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.guitar-chords {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+  gap: 0.5rem;
+}
+
+.guitar button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.guitar-chord-button,
+.guitar-string-button,
+.guitar-icon-button,
+.guitar-text-button {
+  border: 1px solid var(--line);
+  background: rgb(255 255 255 / 0.035);
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.15s var(--ease-out);
+}
+
+.guitar-chord-button:hover,
+.guitar-string-button:hover,
+.guitar-icon-button:hover:not(:disabled),
+.guitar-text-button:hover {
+  border-color: var(--accent);
+}
+
+.guitar-chord-button:active,
+.guitar-string-button:active,
+.guitar-icon-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.guitar-chord-button {
+  display: grid;
+  place-items: center;
+  gap: 0.2rem;
+  min-height: 3.4rem;
+  border-radius: 0.9rem;
+}
+
+.guitar-chord-button strong {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.guitar-chord-button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.guitar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.guitar-strings,
+.guitar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.guitar-string-button {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.1rem;
+  width: 3.1rem;
+  height: 3.1rem;
+  border-radius: 50%;
+}
+
+.guitar-string-button kbd {
+  border: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+
+.guitar-string-button span {
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.guitar-icon-button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+
+.guitar-icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.guitar-capo span {
+  margin-right: 0.25rem;
+  font-size: var(--fs-small);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.guitar-capo output {
+  min-width: 1.5ch;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.guitar-text-button {
+  min-height: 2.75rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.guitar kbd {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.guitar-chord-button[aria-pressed="true"] kbd {
+  border-color: transparent;
+  color: inherit;
+}
+
+.guitar-help {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 62rem;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.guitar-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guitar-help-touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .guitar-help-touch {
+    display: block;
+  }
+
+  .guitar-help-pointer,
+  .guitar-keys {
+    display: none;
+  }
+}
+
+/* Full screen, for playing to a room: the guitar fills it, the controls stay. */
+.guitar:fullscreen {
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  background: var(--ink);
+  color: var(--silk);
+}
+
+.guitar:fullscreen .guitar-stage {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.guitar:fullscreen .guitar-help {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guitar-start {
+    animation: none;
+  }
+}

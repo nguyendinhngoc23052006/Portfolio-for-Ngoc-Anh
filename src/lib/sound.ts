@@ -1,4 +1,7 @@
 import { useSyncExternalStore } from "react";
+import { midiToFrequency } from "./pitch";
+
+export { midiToFrequency };
 
 /*
  * Every sound on the site is synthesised here with the Web Audio API: no audio
@@ -9,10 +12,6 @@ import { useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "ngoc-anh:sound";
 const MAX_VOICES = 28;
-
-export function midiToFrequency(midi: number): number {
-  return 440 * 2 ** ((midi - 69) / 12);
-}
 
 /**
  * The đàn tranh's northern pentatonic (điệu Bắc: C D F G A) over three
@@ -67,18 +66,36 @@ export function setSoundOn(next: boolean): void {
   }
   if (next) unlockAudio();
   else void context?.suspend();
+  emit();
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function emit(): void {
   for (const listener of listeners) listener();
 }
 
 export function useSoundOn(): boolean {
   return useSyncExternalStore(
-    (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    subscribe,
     () => isOn,
     () => true,
   );
+}
+
+/** "off": switched off · "locked": waiting for a first click or key · "running": audible. */
+export type AudioState = "off" | "locked" | "running";
+
+function audioState(): AudioState {
+  if (!isOn) return "off";
+  return context?.state === "running" ? "running" : "locked";
+}
+
+export function useAudioState(): AudioState {
+  return useSyncExternalStore(subscribe, audioState, () => "locked");
 }
 
 // ---------------------------------------------------------------- engine
@@ -109,8 +126,47 @@ export function unlockAudio(): void {
     master = context.createGain();
     master.gain.value = 0.6;
     master.connect(limiter).connect(context.destination);
+    // Every voice also rings in one shared room, so the whole page sounds like a single place.
+    const room = context.createConvolver();
+    room.buffer = roomImpulse(context);
+    const wet = context.createGain();
+    wet.gain.value = 0.22;
+    master.connect(room).connect(wet).connect(limiter);
+    context.addEventListener("statechange", emit);
+    emit();
   }
   if (context.state === "suspended") void context.resume();
+}
+
+/**
+ * A small hall, synthesised: two uncorrelated channels of noise dying away
+ * over 1.8 s and darkening as they go, the way high frequencies fade first in
+ * a real room.
+ */
+function roomImpulse(ctx: BaseAudioContext): AudioBuffer {
+  const seconds = 1.8;
+  const length = Math.floor(ctx.sampleRate * seconds);
+  const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+  for (let channel = 0; channel < 2; channel++) {
+    const data = impulse.getChannelData(channel);
+    let smoothed = 0;
+    for (let i = 0; i < length; i++) {
+      const t = i / length;
+      smoothed += (1 - 0.85 * t) * (Math.random() * 2 - 1 - smoothed);
+      data[i] = smoothed * Math.exp(-6.9 * t) * Math.min(1, i / (ctx.sampleRate * 0.012));
+    }
+  }
+  return impulse;
+}
+
+/**
+ * The shared context and the bus every voice plays into, for instruments
+ * that build their own audio graph. Null until audio is unlocked, and while
+ * sound is off.
+ */
+export function getAudioOutput(): { context: AudioContext; output: AudioNode } | null {
+  if (!isOn || !context || !master) return null;
+  return { context, output: master };
 }
 
 /** Unlocks audio on the first click, tap or key press, before any handler that wants to play. */

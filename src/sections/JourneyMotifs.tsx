@@ -1,6 +1,8 @@
 import type { JourneyId } from "../content/profile";
 import { gsap, seededRandom } from "../lib/motion";
 
+export { attachMotifPlay } from "./journeyPlay";
+
 const random = seededRandom(7);
 const SNOW = Array.from({ length: 26 }, (_, i) => ({
   id: `snow-${i}`,
@@ -64,6 +66,7 @@ function SilkMotif({ stages }: { stages: string[] }) {
       <line className="sm-line" x1="30" y1="190" x2="330" y2="190" />
       {stages.map((stage, i) => (
         <g key={stage} className="sm-node" style={{ transformOrigin: `${30 + i * step}px 190px` }}>
+          <rect className="sm-hit" x={30 + i * step - 32} y="166" width="64" height="76" rx="12" />
           <circle cx={30 + i * step} cy="190" r="13" />
           <text x={30 + i * step} y="232" textAnchor="middle">
             {stage}
@@ -99,7 +102,10 @@ function DongAmMotif() {
       {[0, 1, 2, 3].map((i) => (
         <circle key={`ripple${i}`} className="da-ripple" cx="180" cy="150" r="36" />
       ))}
-      <circle className="da-core" cx="180" cy="150" r="36" fill="url(#da-warm)" />
+      <g className="da-heart">
+        <circle className="da-glow" cx="180" cy="150" r="36" fill="url(#da-warm)" opacity="0" />
+        <circle className="da-core" cx="180" cy="150" r="36" fill="url(#da-warm)" />
+      </g>
       {SNOW.map((flake) => (
         <circle
           key={flake.id}
@@ -130,7 +136,7 @@ function VmoMotif({ tracks }: { tracks: string[] }) {
         const bar = VMO_BARS[i % VMO_BARS.length] ?? { x: 96, width: 100 };
         const y = 50 + i * 52;
         return (
-          <g key={track}>
+          <g key={track} className="vm-row">
             <text className="vm-label" x="0" y={y + 15}>
               {track}
             </text>

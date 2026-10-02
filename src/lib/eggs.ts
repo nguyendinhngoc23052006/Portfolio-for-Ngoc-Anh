@@ -10,6 +10,7 @@ export const EGG_IDS = [
   "replay",
   "spin",
   "knot",
+  "progression",
 ] as const;
 export type EggId = (typeof EGG_IDS)[number];
 
