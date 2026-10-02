@@ -37,16 +37,21 @@ MotionPath) and Lenis. No database.
 ## Checks
 
 `npm run lint` · `npm run typecheck` · `npm test` · `npm run build`. CI
-(`.github/workflows/ci.yml`) runs them on every pull request, plus
-`architecture-current`, which redraws `docs/system-map.md` from the repo's
-files and fails if the committed map disagrees. Never edit that file by hand.
+(`.github/workflows/ci.yml`) runs the first three on every pull request.
 
 ## Deploy
 
-Not wired yet. `wrangler.jsonc` is ready: one Cloudflare Worker named
-`portfolio-for-ngoc-anh` serving `./dist/`. The guide's preview and production
-workflows still assume a Supabase database, which this site does not have; they
-arrive once the guide supports a no-database site.
+Cloudflare Pages, Git integration: Cloudflare builds `main` (`npm run build`,
+output `dist`) on every push and publishes it at `<project>.pages.dev`. Every
+other branch gets its own preview deployment. Pages serves `index.html` for
+unknown paths because there is no `404.html`, which is what makes `/en` work.
+
+Pages deploys whatever reaches `main`, so the gate is GitHub: a ruleset on
+`main` that requires a pull request with green `tests`, `lint` and `typecheck`.
+
+This is outside the pipeline guide, which deploys with GitHub Actions to
+Cloudflare Workers. Do not add a `wrangler.*` file: Pages would ignore it unless
+it set `pages_build_output_dir`, and it would mislead the next reader.
 
 ## Run it locally (optional)
 
