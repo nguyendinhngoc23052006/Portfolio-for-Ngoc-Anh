@@ -15,6 +15,7 @@ export const en: Content = {
     contact: "Contact",
     backToTop: "Back to top",
     chapterRail: "Chapters",
+    sound: "Sound",
   },
   chapters: {
     hero: "Opening",
@@ -185,17 +186,20 @@ export const en: Content = {
   },
   marquee: ["Business", "Projects", "Creativity", "Logistics", "Supply Chain"],
   eggs: {
-    hint: "This page hides {count} small secrets — try plucking the silk, tapping the cocoon, or typing my name.",
+    hint: "This page hides {count} small secrets — try strumming the silk at the top, tapping the cocoon, or typing my name. Turn the sound on.",
     found: "Secrets",
     allFound: "You found every secret! Thanks for staying to play.",
     cocoonLabel: "Tap the silk cocoon",
     replayLabel: "Replay the illustration",
     messages: {
       pluck: "You just plucked the silk. Hear it hum?",
+      strum: "A đàn tranh tune on silk strings — lovely!",
       hatch: "The cocoon hatched — a silk moth just flew out!",
       secretWord: "Now you know my name.",
       dispatch: "One order just delivered to Results.",
       replay: "Once more — just as neat as before.",
+      spin: "You just spun the world. The cargo still arrived on time.",
+      knot: "Knot tied. Let's connect!",
     },
   },
 };

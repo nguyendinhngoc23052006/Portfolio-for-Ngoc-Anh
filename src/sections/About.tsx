@@ -5,6 +5,7 @@ import { ThreadAnchor } from "../components/ThreadAnchor";
 import type { Content } from "../content/types";
 import { discover, silkBurst } from "../lib/eggs";
 import { gsap, prefersReducedMotion, useScene } from "../lib/motion";
+import { arpeggio, noteAt, panFor, pluck, thud, whoosh } from "../lib/sound";
 import "./about.css";
 
 const LOOPS = Array.from({ length: 22 }, (_, i) => ({
@@ -59,8 +60,10 @@ export function About({ text, cocoonLabel }: Props) {
   const handleCocoonTap = (event: MouseEvent<HTMLButtonElement>) => {
     const button = event.currentTarget;
     const isStill = prefersReducedMotion();
+    const pan = panFor(event.clientX);
     taps.current += 1;
     if (taps.current < TAPS_TO_HATCH) {
+      thud({ pan, gain: 0.6 + taps.current * 0.2 });
       if (!isStill) {
         gsap.to(button, {
           keyframes: { rotate: [0, -9, 8, -4, 0] },
@@ -72,6 +75,10 @@ export function About({ text, cocoonLabel }: Props) {
     }
     taps.current = 0;
     discover("hatch");
+    thud({ pan });
+    whoosh({ pan, delay: 0.05, duration: 0.9 });
+    arpeggio([noteAt(7), noteAt(9), noteAt(10), noteAt(12)], { voice: "pluck", step: 0.11, pan });
+    pluck(noteAt(14), { delay: 0.5, bend: 0.6, pan });
     if (isStill) return;
     const box = button.getBoundingClientRect();
     const center = { x: box.left + box.width / 2, y: box.top + box.height * 0.375 };

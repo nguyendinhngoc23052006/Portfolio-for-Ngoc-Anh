@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChapterId } from "../content/types";
 import { ScrollTrigger } from "../lib/motion";
+import { noteAt, pluck } from "../lib/sound";
 
 interface Props {
   chapters: Record<ChapterId, string>;
@@ -24,9 +25,13 @@ export function ChapterRail({ chapters, label }: Props) {
       (section) => section.id in chapters,
     );
     setList(sections.map((section) => section.id as ChapterId));
+    let current = -1;
     const activate = (index: number) => {
       const section = sections[index];
       if (!section) return;
+      // Each chapter sounds one soft note, rising as the story goes on.
+      if (current !== -1 && index !== current) pluck(noteAt(3 + index), { gain: 0.16 });
+      current = index;
       setActiveIndex(index);
       document.documentElement.dataset.theme = section.dataset.sectionTheme ?? "ink";
     };

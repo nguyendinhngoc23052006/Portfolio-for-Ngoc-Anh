@@ -12,6 +12,7 @@ import { ThreadCursor } from "./components/ThreadCursor";
 import { profile } from "./content/profile";
 import type { Content, Locale } from "./content/types";
 import { ScrollTrigger, startSmoothScroll } from "./lib/motion";
+import { installAudioUnlock } from "./lib/sound";
 import { About } from "./sections/About";
 import { Contact } from "./sections/Contact";
 import { Direction } from "./sections/Direction";
@@ -30,9 +31,13 @@ interface Props {
 export function App({ locale, content }: Props) {
   useEffect(() => {
     const stopSmoothScroll = startSmoothScroll();
+    const removeAudioUnlock = installAudioUnlock();
     // Web fonts change line lengths, and with them every pinned distance.
     document.fonts?.ready.then(() => ScrollTrigger.refresh());
-    return stopSmoothScroll;
+    return () => {
+      stopSmoothScroll();
+      removeAudioUnlock();
+    };
   }, []);
 
   return (

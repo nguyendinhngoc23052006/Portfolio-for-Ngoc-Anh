@@ -36,6 +36,7 @@ export interface Content {
     contact: string;
     backToTop: string;
     chapterRail: string;
+    sound: string;
   };
   chapters: Record<ChapterId, string>;
   present: string;

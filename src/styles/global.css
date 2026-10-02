@@ -429,9 +429,61 @@ main,
   pointer-events: none;
 }
 
-.site-header a {
+.site-header a,
+.site-header button {
   pointer-events: auto;
   text-decoration: none;
+}
+
+.sound-toggle {
+  gap: 0.45rem;
+  background: none;
+  cursor: pointer;
+}
+
+.sound-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sound-icon path:first-child {
+  fill: currentColor;
+}
+
+.sound-waves {
+  animation: sound-waves 1.6s ease-in-out infinite;
+}
+
+@keyframes sound-waves {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.sound-toggle[aria-pressed="false"] {
+  opacity: 0.7;
+}
+
+@media (max-width: 599px) {
+  .sound-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-waves {
+    animation: none;
+  }
 }
 
 .monogram {

@@ -1,7 +1,16 @@
 import { useSyncExternalStore } from "react";
 
 /** The hidden interactions. The counter's total is this list's length. */
-export const EGG_IDS = ["pluck", "hatch", "secretWord", "dispatch", "replay"] as const;
+export const EGG_IDS = [
+  "pluck",
+  "strum",
+  "hatch",
+  "secretWord",
+  "dispatch",
+  "replay",
+  "spin",
+  "knot",
+] as const;
 export type EggId = (typeof EGG_IDS)[number];
 
 export const SECRET_WORD = "ngocanh";
@@ -34,13 +43,19 @@ export function useEggs(): EggSnapshot {
   );
 }
 
-/** Feeds keystrokes in; returns true on the key that completes `word`. */
-export function createWordMatcher(word: string): (key: string) => boolean {
+/**
+ * Feeds keystrokes in; returns how many leading letters of `word` the latest
+ * keys spell (word.length = complete), or null for a key that is not a letter.
+ */
+export function createWordMatcher(word: string): (key: string) => number | null {
   let typed = "";
   return (key) => {
-    if (!/^[a-z]$/i.test(key)) return false;
+    if (!/^[a-z]$/i.test(key)) return null;
     typed = (typed + key.toLowerCase()).slice(-word.length);
-    return typed === word;
+    for (let length = word.length; length > 0; length--) {
+      if (typed.endsWith(word.slice(0, length))) return length;
+    }
+    return 0;
   };
 }
 

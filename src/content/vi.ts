@@ -14,6 +14,7 @@ export const vi: Content = {
     contact: "Liên hệ",
     backToTop: "Lên đầu trang",
     chapterRail: "Các chương",
+    sound: "Âm thanh",
   },
   chapters: {
     hero: "Mở đầu",
@@ -181,17 +182,20 @@ export const vi: Content = {
   },
   marquee: ["Kinh doanh", "Dự án", "Sáng tạo", "Logistics", "Chuỗi cung ứng"],
   eggs: {
-    hint: "Trang này giấu {count} bí mật nho nhỏ — thử gảy sợi tơ, gõ nhẹ vào kén, hay gõ tên mình xem.",
+    hint: "Trang này giấu {count} bí mật nho nhỏ — thử gảy đàn tơ ở đầu trang, gõ nhẹ vào kén, hay gõ tên mình xem. Nhớ bật âm thanh nhé.",
     found: "Bí mật",
     allFound: "Bạn đã tìm ra tất cả bí mật! Cảm ơn bạn đã ghé chơi lâu như vậy.",
     cocoonLabel: "Gõ nhẹ vào kén tằm",
     replayLabel: "Xem lại hình minh hoạ",
     messages: {
       pluck: "Bạn vừa gảy sợi tơ. Nghe thấy không?",
+      strum: "Một khúc đàn tranh trên dây tơ — hay lắm!",
       hatch: "Kén đã nở — một chú ngài tơ vừa bay ra!",
       secretWord: "Bạn biết tên mình rồi đó.",
       dispatch: "Một đơn hàng vừa được giao đến Kết quả.",
       replay: "Làm lại lần nữa — vẫn gọn gàng như cũ.",
+      spin: "Bạn vừa quay cả thế giới. Hàng vẫn giao đúng hẹn.",
+      knot: "Nút thắt đã buộc. Cùng kết nối nhé!",
     },
   },
 };
