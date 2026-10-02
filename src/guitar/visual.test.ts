@@ -36,6 +36,19 @@ describe("the string you see", () => {
     expect(string.peak()).toBeGreaterThan(0);
   });
 
+  it("leaves no ghost behind a fret pressed while the string rings", () => {
+    const string = new VisualString(96);
+    string.pluck(0.3, 1);
+    string.step(10);
+    string.press(fretPosition(12));
+    // All three rotating buffers must be clear behind the new fret, not just two of them.
+    for (let n = 0; n < 3; n++) {
+      string.step(1);
+      const behind = string.displacement.subarray(0, string.stopIndex + 1);
+      expect(behind.every((value) => value === 0)).toBe(true);
+    }
+  });
+
   it("settles when it loses energy, and stays pinned at both ends", () => {
     const string = new VisualString(64);
     string.pluck(0.25, 1);

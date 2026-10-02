@@ -96,6 +96,16 @@ describe("the left hand", () => {
     expect(instrument.fret(5)).toBe(0);
   });
 
+  it("keeps a palm that is still held down after a quick mute ends", () => {
+    const { instrument, lastDamp } = setup();
+    instrument.setPalm(true);
+    instrument.silence();
+    vi.advanceTimersByTime(200);
+    expect(lastDamp(2)).toMatchObject({ amount: 1 });
+    instrument.setPalm(false);
+    expect(lastDamp(2)).toMatchObject({ amount: 0 });
+  });
+
   it("stops everything under the palm, then lets go", () => {
     const { instrument, lastDamp } = setup();
     instrument.setChord(chord("C"));

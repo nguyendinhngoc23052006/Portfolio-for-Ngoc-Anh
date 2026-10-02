@@ -42,6 +42,10 @@ import "./guitar.css";
 const STRING_NUMBERS = [1, 2, 3, 4, 5, 6] as const;
 /** Holding still this long on the body rests the palm on the strings. */
 const PALM_MS = 260;
+/** A pause longer than this between pointer moves starts a new stroke instead of continuing one. */
+const STROKE_GAP_MS = 100;
+/** A finger on a touch screen waits this long before fretting, in case it is starting a scroll. */
+const TOUCH_SETTLE_MS = 70;
 
 interface Finger {
   zone: "neck" | "body";
@@ -52,6 +56,9 @@ interface Finger {
   time: number;
   palmTimer?: number;
   isPalm: boolean;
+  /** Touch on the neck, not yet sounded: plays once the finger settles, or never if it scrolls. */
+  settle?: () => void;
+  settleTimer?: number;
 }
 
 /**
@@ -89,12 +96,14 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
     const palette = readPalette(document.documentElement);
     let layout: Layout = createLayout(1, 1, 1);
 
+    // Layout size, not getBoundingClientRect: the entrance tilts the stage, and a rotated box is wider.
     const resize = () => {
-      const box = canvas.getBoundingClientRect();
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      layout = createLayout(box.width, box.height, dpr);
-      canvas.width = Math.round(box.width * dpr);
-      canvas.height = Math.round(box.height * dpr);
+      layout = createLayout(width, height, dpr);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       root.dataset.layout = layout.isVertical ? "vertical" : "horizontal";
       drawGuitar(ctx, layout, instrument, palette);
     };
@@ -112,7 +121,12 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
     };
     const watcher = new IntersectionObserver(([entry]) => {
       cancelAnimationFrame(frame);
-      if (!entry?.isIntersecting) return;
+      if (!entry?.isIntersecting) {
+        // Scrolled away: give the keyboard back to the page, so Space scrolls and letters type again.
+        const focused = document.activeElement;
+        if (focused instanceof HTMLElement && root.contains(focused)) focused.blur();
+        return;
+      }
       last = performance.now();
       frame = requestAnimationFrame(loop);
     });
@@ -121,15 +135,17 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
     const fingers = new Map<number, Finger>();
     let hover: { along: number; across: number; time: number } | null = null;
 
-    const locate = (event: PointerEvent) => {
-      const box = canvas.getBoundingClientRect();
-      return toInstrument(layout, event.clientX - box.left, event.clientY - box.top);
-    };
+    // offsetX/Y are in the canvas's own, untransformed coordinates, even mid-tilt.
+    const locate = (event: PointerEvent) => toInstrument(layout, event.offsetX, event.offsetY);
+
+    /** One sweep across the strings, counted as a strum once it has crossed four of them. */
+    let stroke = { direction: 0, crossed: 0, at: Number.NEGATIVE_INFINITY, isCounted: false };
 
     /** Plucks every string the pick crossed between two points, in the order it crossed them. */
-    const strum = (from: number, to: number, along: number, milliseconds: number) => {
+    const strum = (from: number, to: number, along: number, elapsed: number, now: number) => {
       if (from === to) return;
       const direction = to > from ? 1 : -1;
+      const milliseconds = Math.min(elapsed, 60);
       const speed = Math.abs(to - from) / Math.max(milliseconds, 4);
       const velocity = Math.min(1, 0.25 + speed * 0.35);
       const crossed = OPEN_STRINGS.map((_, string) => string)
@@ -138,8 +154,16 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
           return direction > 0 ? y > from && y <= to : y < from && y >= to;
         })
         .sort((a, b) => direction * (acrossOf(layout, a) - acrossOf(layout, b)));
-      // Sweeping most of the strings at once is a strum, and counts toward the four-chord loop.
-      if (crossed.length >= 4 && instrument.recordStrum()) discover("progression");
+      // A sweep that crosses most of the strings is a strum, and counts toward the four-chord loop.
+      if (stroke.direction !== direction || now - stroke.at > 250) {
+        stroke = { direction, crossed: 0, at: now, isCounted: false };
+      }
+      stroke.crossed += crossed.length;
+      if (crossed.length > 0) stroke.at = now;
+      if (!stroke.isCounted && stroke.crossed >= 4) {
+        stroke.isCounted = true;
+        if (instrument.recordStrum()) discover("progression");
+      }
       for (const string of crossed) {
         const share = Math.abs(acrossOf(layout, string) - from) / Math.abs(to - from);
         instrument.pluck(
@@ -170,8 +194,19 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
       const { string, distance } = nearestString(layout, point.across);
       if (zone === "neck") {
         // Pressing a fret hard enough sounds it: a hammer-on, so the neck alone plays melodies.
-        instrument.press(event.pointerId, string, fretAt(scaleAt(layout, point.along)));
-        instrument.pluck(string, 0.8, 0.42);
+        const fret = fretAt(scaleAt(layout, point.along));
+        const sound = () => {
+          finger.settle = undefined;
+          window.clearTimeout(finger.settleTimer);
+          instrument.press(event.pointerId, string, fret);
+          instrument.pluck(string, 0.8, 0.42);
+        };
+        if (event.pointerType === "touch") {
+          finger.settle = sound;
+          finger.settleTimer = window.setTimeout(sound, TOUCH_SETTLE_MS);
+        } else {
+          sound();
+        }
       } else {
         if (distance < layout.gap * 0.32) {
           instrument.pluck(
@@ -200,14 +235,32 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
           window.clearTimeout(finger.palmTimer);
           finger.palmTimer = undefined;
         }
+        if (finger.settle && layout.isVertical && Math.abs(point.along - finger.startAlong) > 6) {
+          // Moving along an upright neck before it settled: that is the start of a scroll.
+          window.clearTimeout(finger.settleTimer);
+          finger.settle = undefined;
+          fingers.delete(event.pointerId);
+          return;
+        }
         if (finger.zone === "neck") {
+          if (finger.settle) return;
           // Dragging along the string slides the finger from fret to fret.
           if (zoneAt(layout, point.along) === "neck") {
             const pressed = nearestString(layout, finger.startAcross).string;
             instrument.press(event.pointerId, pressed, fretAt(scaleAt(layout, point.along)));
           }
-        } else if (!finger.isPalm && zoneAt(layout, point.along) === "body") {
-          strum(finger.across, point.across, point.along, event.timeStamp - finger.time);
+        } else if (
+          !finger.isPalm &&
+          zoneAt(layout, point.along) === "body" &&
+          event.timeStamp - finger.time < STROKE_GAP_MS
+        ) {
+          strum(
+            finger.across,
+            point.across,
+            point.along,
+            event.timeStamp - finger.time,
+            event.timeStamp,
+          );
         }
         finger.along = point.along;
         finger.across = point.across;
@@ -216,12 +269,20 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
       }
       if (event.pointerType === "touch") return;
       // A mouse needs no click to strum: sweeping across the strings plays them.
+      // After a pause (or a scroll under a resting pointer) the next move starts afresh.
       if (
         hover &&
+        event.timeStamp - hover.time < STROKE_GAP_MS &&
         zoneAt(layout, point.along) === "body" &&
         zoneAt(layout, hover.along) === "body"
       ) {
-        strum(hover.across, point.across, point.along, event.timeStamp - hover.time);
+        strum(
+          hover.across,
+          point.across,
+          point.along,
+          event.timeStamp - hover.time,
+          event.timeStamp,
+        );
       }
       hover = { ...point, time: event.timeStamp };
     };
@@ -232,6 +293,11 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
       if (!finger) return;
       fingers.delete(event.pointerId);
       window.clearTimeout(finger.palmTimer);
+      if (finger.settle) {
+        // A quick tap lifts before it settles: sound it now. A scroll (pointercancel) never sounds.
+        if (event.type === "pointerup") finger.settle();
+        else window.clearTimeout(finger.settleTimer);
+      }
       if (finger.isPalm && ![...fingers.values()].some((other) => other.isPalm))
         instrument.setPalm(false);
       if (finger.zone === "neck") instrument.lift(event.pointerId);
@@ -255,7 +321,11 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
       cancelAnimationFrame(frame);
       resizer.disconnect();
       watcher.disconnect();
-      for (const finger of fingers.values()) window.clearTimeout(finger.palmTimer);
+      for (const finger of fingers.values()) {
+        window.clearTimeout(finger.palmTimer);
+        window.clearTimeout(finger.settleTimer);
+      }
+      instrument.dispose();
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
       canvas.removeEventListener("pointerup", onUp);
@@ -432,7 +502,7 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
               type="button"
               className="guitar-icon-button"
               aria-label={text.capoDown}
-              disabled={capo === 0}
+              aria-disabled={capo === 0}
               onClick={() => moveCapo(-1)}
             >
               −
@@ -442,7 +512,7 @@ export function Guitar({ text }: { text: Content["hobby"]["guitar"] }) {
               type="button"
               className="guitar-icon-button"
               aria-label={text.capoUp}
-              disabled={capo === MAX_CAPO}
+              aria-disabled={capo === MAX_CAPO}
               onClick={() => moveCapo(1)}
             >
               +

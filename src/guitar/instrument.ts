@@ -45,6 +45,8 @@ export class Instrument {
   private chord: Chord | null = null;
   private capoFret = 0;
   private isPalmDown = false;
+  private isSilencing = false;
+  private silenceTimer: ReturnType<typeof setTimeout> | undefined;
   /** Fingers on the neck, by pointer: several can press one string, and the highest fret sounds. */
   private readonly fingers = new Map<number, { string: number; fret: number }>();
   /**
@@ -111,10 +113,19 @@ export class Instrument {
     this.update();
   }
 
-  /** Stops everything ringing, then lets go. */
+  /** Stops everything ringing, then lets go; a palm a finger is holding down stays down. */
   silence(): void {
-    this.setPalm(true);
-    setTimeout(() => this.setPalm(false), 150);
+    clearTimeout(this.silenceTimer);
+    this.isSilencing = true;
+    this.update();
+    this.silenceTimer = setTimeout(() => {
+      this.isSilencing = false;
+      this.update();
+    }, 150);
+  }
+
+  dispose(): void {
+    clearTimeout(this.silenceTimer);
   }
 
   /** The fret a string sounds at: open, the capo, the chord or a finger, whichever is highest. */
@@ -216,7 +227,7 @@ export class Instrument {
         if (pressed.string === string) fret = Math.max(fret, pressed.fret);
       }
       fret = this.sustained.get(string) ?? fret;
-      const damping = this.isPalmDown ? 1 : this.isMuted(string) ? MUTED : 0;
+      const damping = this.isPalmDown || this.isSilencing ? 1 : this.isMuted(string) ? MUTED : 0;
       if (isFirst || fret !== this.frets[string]) {
         this.frets[string] = fret;
         this.visuals[string]?.press(fretPosition(fret));

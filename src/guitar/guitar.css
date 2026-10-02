@@ -136,24 +136,26 @@
 .guitar-text-button {
   border: 1px solid var(--line);
   background: rgb(255 255 255 / 0.035);
+  /* Press feedback uses `scale`, never `transform`: the entrance animates transform, and a CSS
+     transition on it would freeze the buttons mid-flight. */
   transition:
     background 0.2s,
     border-color 0.2s,
     color 0.2s,
-    transform 0.15s var(--ease-out);
+    scale 0.15s var(--ease-out);
 }
 
 .guitar-chord-button:hover,
 .guitar-string-button:hover,
-.guitar-icon-button:hover:not(:disabled),
+.guitar-icon-button:hover:not([aria-disabled="true"]),
 .guitar-text-button:hover {
   border-color: var(--accent);
 }
 
 .guitar-chord-button:active,
 .guitar-string-button:active,
-.guitar-icon-button:active:not(:disabled) {
-  transform: scale(0.94);
+.guitar-icon-button:active:not([aria-disabled="true"]) {
+  scale: 0.94;
 }
 
 .guitar-chord-button {
@@ -187,6 +189,7 @@
 .guitar-strings,
 .guitar-group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem;
 }
@@ -196,8 +199,8 @@
   place-content: center;
   justify-items: center;
   gap: 0.1rem;
-  width: 3.1rem;
-  height: 3.1rem;
+  width: clamp(2.6rem, 13vw, 3.1rem);
+  height: clamp(2.6rem, 13vw, 3.1rem);
   border-radius: 50%;
 }
 
@@ -223,7 +226,8 @@
   font-size: 1.1rem;
 }
 
-.guitar-icon-button:disabled {
+/* aria-disabled, not disabled: a disabled button drops keyboard focus out of the guitar. */
+.guitar-icon-button[aria-disabled="true"] {
   opacity: 0.35;
   cursor: default;
 }
@@ -315,6 +319,29 @@
 
 .guitar:fullscreen .guitar-help {
   display: none;
+}
+
+/* A landscape phone: keep the strings tall, chords in one scrolling row, single strings on the keys. */
+@media (max-height: 560px) {
+  .guitar:fullscreen {
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .guitar:fullscreen .guitar-chords {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .guitar:fullscreen .guitar-chord-button {
+    flex: 0 0 3.6rem;
+    min-height: 2.75rem;
+  }
+
+  .guitar:fullscreen .guitar-strings {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

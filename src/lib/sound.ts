@@ -135,7 +135,8 @@ export function unlockAudio(): void {
     context.addEventListener("statechange", emit);
     emit();
   }
-  if (context.state === "suspended") void context.resume();
+  // Not only "suspended": Safari also reports "interrupted" after a call or a lock screen.
+  if (context.state !== "running") void context.resume();
 }
 
 /**

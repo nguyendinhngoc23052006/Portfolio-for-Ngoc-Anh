@@ -109,8 +109,14 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  /* Sideways swipes play the harp and the guitar; they must never turn into "go back". */
-  overscroll-behavior-x: none;
+}
+
+/* On touch screens sideways swipes play the harp and the guitar; they must never turn into
+   "go back". Trackpads keep their back gesture: the instruments there are played by pointer. */
+@media (pointer: coarse) {
+  html {
+    overscroll-behavior-x: none;
+  }
 }
 
 body {
@@ -887,6 +893,8 @@ main,
   display: grid;
   justify-items: center;
   gap: 0.5rem;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--gutter));
   pointer-events: none;
   transform: translateX(-50%);
 }

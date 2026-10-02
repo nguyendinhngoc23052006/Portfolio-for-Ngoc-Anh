@@ -8,32 +8,55 @@ import processorUrl from "./processor.ts?worker&url";
  * room reverb apply to it like every other sound.
  */
 
+/** A pluck older than this when audio starts running is dropped, not played late. */
+const FRESH_MS = 250;
+
 let node: AudioWorkletNode | null = null;
 let isConnecting = false;
 let isFallback = false;
-let queue: GuitarMessage[] = [];
 /** The latest fret and damping per string, replayed into a freshly loaded worklet. */
 const settings = new Map<string, GuitarMessage>();
+/** Plucks waiting for the strings to load or for audio to start running. */
+let waiting: { message: GuitarMessage; at: number }[] = [];
+const watched = new WeakSet<AudioContext>();
 
 export function sendToGuitar(messages: GuitarMessage[]): void {
   for (const message of messages) {
     if (message.type !== "pluck") settings.set(`${message.type}:${message.string}`, message);
   }
-  if (node) {
-    node.port.postMessage(messages);
-    return;
-  }
-  if (isFallback) {
-    playFallback(messages);
-    return;
-  }
   // Locked or switched off: silent, like every other sound on the site.
   const audio = getAudioOutput();
   if (!audio) return;
-  queue.push(...messages.filter((message) => message.type === "pluck"));
-  if (isConnecting) return;
+  const settingsOnly = messages.filter((message) => message.type !== "pluck");
+  if (node && settingsOnly.length > 0) node.port.postMessage(settingsOnly);
+  const now = performance.now();
+  for (const message of messages) if (message.type === "pluck") waiting.push({ message, at: now });
+  watch(audio.context);
+  release(audio.context);
+  if (node || isFallback || isConnecting) return;
   isConnecting = true;
   void connect(audio.context, audio.output);
+}
+
+/**
+ * Plays the waiting plucks once the strings are loaded and audio is running.
+ * Stale ones are dropped: strings keep every pluck they are given, so a page
+ * played while audio was paused would otherwise release them all at once.
+ */
+function release(context: AudioContext): void {
+  if (context.state !== "running" || (!node && !isFallback)) return;
+  const now = performance.now();
+  const fresh = waiting.filter((entry) => now - entry.at < FRESH_MS).map((entry) => entry.message);
+  waiting = [];
+  if (fresh.length === 0) return;
+  if (node) node.port.postMessage(fresh);
+  else playFallback(fresh);
+}
+
+function watch(context: AudioContext): void {
+  if (watched.has(context)) return;
+  watched.add(context);
+  context.addEventListener("statechange", () => release(context));
 }
 
 async function connect(context: AudioContext, output: AudioNode): Promise<void> {
@@ -63,15 +86,14 @@ async function connect(context: AudioContext, output: AudioNode): Promise<void> 
       .reduce<AudioNode>((from, to) => from.connect(to), worklet)
       .connect(level)
       .connect(output);
-    worklet.port.postMessage([...settings.values(), ...queue]);
+    worklet.port.postMessage([...settings.values()]);
     node = worklet;
   } catch (error) {
     // Old browsers without AudioWorklet still get a guitar, one plucked sample per note.
     console.warn("Guitar: the string simulation could not start; using simple plucks.", error);
     isFallback = true;
-    playFallback(queue);
   }
-  queue = [];
+  release(context);
 }
 
 function playFallback(messages: GuitarMessage[]): void {

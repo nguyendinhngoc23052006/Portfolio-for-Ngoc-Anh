@@ -33,6 +33,7 @@ export class VisualString {
     this.stop = Math.max(0, Math.min(this.resolution - 2, Math.round(fraction * this.resolution)));
     this.displacement.fill(0, 0, this.stop + 1);
     this.previous.fill(0, 0, this.stop + 1);
+    this.next.fill(0, 0, this.stop + 1);
   }
 
   /**
