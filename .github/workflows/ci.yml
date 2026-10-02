@@ -1,12 +1,8 @@
-# Copied from the guide's templates/workflows/. No placeholders.
-# Job names "tests", "lint", "typecheck" and "architecture-current" are required
-# BY NAME by both rulesets (Part 2 step 11); the first three are also polled by
-# name by deploy-production's release gate. Rename one and you move every place
-# in the same PR.
-#
-# architecture-current runs scripts/architecture.mjs, which Part 2 step 10 copies
-# in the SAME PR as this file. Copying this workflow without that script fails
-# every PR from that point on.
+# From the guide's templates/workflows/ci.yml, minus its architecture-current
+# job: that job's generator only knows Cloudflare Workers, and this site deploys
+# on Cloudflare Pages, so its map would be wrong.
+# Job names "tests", "lint" and "typecheck" are required BY NAME by the main
+# ruleset. Rename one and rename it there in the same PR.
 name: ci
 
 on:
@@ -56,20 +52,3 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-
-  # The architecture graph is DERIVED, never drawn. This job regenerates it from
-  # the repo's own committed files and fails if the committed picture disagrees.
-  # That is the whole enforcement: a diagram nobody checks is wrong the first
-  # time someone renames a workflow and forgets to redraw it.
-  architecture-current:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: "lts/*"
-      # No `npm ci` step: the script's import block is `node:fs` and `node:path`
-      # only, so there is nothing to install. It leans on the same setup-node
-      # step the other three jobs in this file already depend on - not on any
-      # additional platform behavior.
-      - run: node scripts/architecture.mjs --check
