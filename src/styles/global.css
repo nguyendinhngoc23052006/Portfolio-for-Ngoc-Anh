@@ -648,13 +648,22 @@ main,
 }
 
 /* Only the dots catch the pointer: the hidden labels must not cover the art and the guitar beside them. */
+.rail,
 .rail-track,
 .rail-knot {
   pointer-events: none;
 }
 
 .rail-knot-dot {
+  position: relative;
   pointer-events: auto;
+}
+
+/* A finger-sized target around the small dot. */
+.rail-knot-dot::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
 }
 
 .rail-knot {

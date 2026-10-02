@@ -185,8 +185,8 @@ export function attachNetworkPlay(network: HTMLElement): () => void {
 
   hubs.forEach((hub, index) => {
     listen(hub, "pointerdown", () => dispatch(hub));
-    listen(hub, "pointerenter", () => {
-      if (!isFinePointer()) return;
+    listen(hub, "pointerenter", (event) => {
+      if (event.pointerType === "touch" || !isFinePointer()) return;
       lightRoutes(hub, true);
       if (allowTick()) tick({ gain: 0.35, pan: panFor(centreX(hub)), pitch: 2300 + index * 450 });
     });

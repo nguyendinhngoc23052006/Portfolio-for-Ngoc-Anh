@@ -128,15 +128,15 @@ export function attachContactPlay(root: HTMLElement): () => void {
     tighten();
   });
   listen(hit, "pointermove", (event) => {
-    if (event.pointerType === "touch" || !isFinePointer() || !allowStrum()) return;
+    if (event.pointerType === "touch" || !allowStrum() || !isFinePointer()) return;
     strum(event.clientX);
   });
   listen(email, "pointerenter", (event) => {
-    if (!isFinePointer() || !allowEmail()) return;
+    if (event.pointerType === "touch" || !isFinePointer() || !allowEmail()) return;
     pluck(noteAt(10), { gain: 0.35, pan: panFor(event.clientX) });
   });
   listen(phone, "pointerenter", (event) => {
-    if (!isFinePointer() || !allowPhone()) return;
+    if (event.pointerType === "touch" || !isFinePointer() || !allowPhone()) return;
     tick({ gain: 0.4, pan: panFor(event.clientX), pitch: 3000 });
   });
 
